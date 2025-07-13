@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Main Page</title>
+</head>
+<body>
+<h1>YEEZY</h1>
+
+<!-- 로그인 안한 사용자용 -->
+<div sec:authorize="!isAuthenticated()">
+    <a th:href="@{/login}">로그인</a>
+    <a th:href="@{/signup}">회원가입</a>
+</div>
+
+<!-- 로그인한 사용자용 -->
+<div sec:authorize="isAuthenticated()">
+    <a th:href="@{/mypage}">마이페이지</a>
+    <a th:href="@{/logout}">로그아웃</a>
+</div>
+</body>
+</html>

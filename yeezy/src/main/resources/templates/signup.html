@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>회원가입</title>
+</head>
+<body>
+<h1>회원가입</h1>
+<form id="signupForm">
+    <input type="text" name="name" placeholder="이름" required /><br>
+    <input type="email" name="email" placeholder="이메일" required /><br>
+    <input type="password" name="password" placeholder="비밀번호" required /><br>
+    <button type="submit">회원가입</button>
+</form>
+
+<script>
+    document.getElementById("signupForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const form = e.target;
+
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name.value,
+          email: form.email.value,
+          password: form.password.value
+        }),
+      });
+
+      if (res.ok) {
+        alert("회원가입 성공!");
+        window.location.href = "/login"; // 로그인 페이지로 이동
+      } else {
+        const errorText = await res.text();
+        alert("회원가입 실패: " + errorText);
+      }
+    });
+</script>
+</body>
+</html>

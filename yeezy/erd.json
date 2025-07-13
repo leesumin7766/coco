@@ -1,0 +1,113 @@
+{
+  "entities": [
+    {
+      "name": "user",
+      "attributes": [
+        "id: INT (PK)",
+        "username: VARCHAR",
+        "password: VARCHAR",
+        "email: VARCHAR",
+        "role: ENUM(USER, ADMIN)",
+        "created_at: DATETIME"
+      ]
+    },
+    {
+      "name": "seller",
+      "attributes": [
+        "id: INT (PK)",
+        "user_id: INT (FK)",
+        "seller_status: ENUM(PENDING, APPROVED, REJECTED)",
+        "created_at: DATETIME"
+      ]
+    },
+    {
+      "name": "product",
+      "attributes": [
+        "id: INT (PK)",
+        "name: VARCHAR",
+        "brand: VARCHAR",
+        "description: TEXT",
+        "image_url: VARCHAR",
+        "created_at: DATETIME"
+      ]
+    },
+    {
+      "name": "product_size",
+      "attributes": [
+        "id: INT (PK)",
+        "product_id: INT (FK)",
+        "size: VARCHAR",
+        "stock: INT",
+        "price: INT"
+      ]
+    },
+    {
+      "name": "ask",
+      "attributes": [
+        "id: INT (PK)",
+        "product_size_id: INT (FK)",
+        "seller_id: INT (FK)",
+        "price: INT",
+        "created_at: DATETIME"
+      ]
+    },
+    {
+      "name": "cart",
+      "attributes": [
+        "id: INT (PK)",
+        "user_id: INT (FK)",
+        "product_size_id: INT (FK)",
+        "quantity: INT"
+      ]
+    },
+    {
+      "name": "transactions",
+      "attributes": [
+        "id: INT (PK)",
+        "user_id: INT (FK)",
+        "ask_id: INT (FK)",
+        "transaction_time: DATETIME"
+      ]
+    },
+    {
+      "name": "inspections",
+      "attributes": [
+        "id: INT (PK)",
+        "transaction_id: INT (FK)",
+        "result: ENUM(PASS, FAIL)",
+        "comment: TEXT"
+      ]
+    },
+    {
+      "name": "payment",
+      "attributes": [
+        "id: INT (PK)",
+        "transaction_id: INT (FK)",
+        "amount: INT",
+        "status: ENUM(PENDING, COMPLETED, FAILED)"
+      ]
+    },
+    {
+      "name": "delivery",
+      "attributes": [
+        "id: INT (PK)",
+        "payment_id: INT (FK)",
+        "address: VARCHAR",
+        "delivery_status: ENUM(PREPARING, SHIPPED, DELIVERED)"
+      ]
+    }
+  ],
+  "relationships": [
+    { "from": "seller", "to": "user", "relationship": "N:1" },
+    { "from": "product_size", "to": "product", "relationship": "N:1" },
+    { "from": "ask", "to": "product_size", "relationship": "N:1" },
+    { "from": "ask", "to": "seller", "relationship": "N:1" },
+    { "from": "cart", "to": "user", "relationship": "N:1" },
+    { "from": "cart", "to": "product_size", "relationship": "N:1" },
+    { "from": "transactions", "to": "ask", "relationship": "N:1" },
+    { "from": "transactions", "to": "user", "relationship": "N:1" },
+    { "from": "inspections", "to": "transactions", "relationship": "1:1" },
+    { "from": "payment", "to": "transactions", "relationship": "1:1" },
+    { "from": "delivery", "to": "payment", "relationship": "1:1" }
+  ]
+}
