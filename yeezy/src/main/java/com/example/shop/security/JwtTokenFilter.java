@@ -49,6 +49,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             }
         }
         String token = resolveToken(request);
+        System.out.println("[JwtTokenFilter] Extracted token: " + token);
 
         if (token != null && jwtUtil.validateToken(token)) {
             String email = jwtUtil.getEmailFromToken(token);

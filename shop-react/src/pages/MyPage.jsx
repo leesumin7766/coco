@@ -76,11 +76,14 @@ const MyPage = () => {
         <button onClick={() => setActiveTab("info")}>🧑 내 정보 수정</button>
       </div>
 
-    {/* ✅ 판매자에게만 제품 등록 버튼 보여주기 */}
       <div style={{ margin: "1rem 0" }}>
         <button onClick={() => navigate("/product/new")}>📦 제품 등록</button>
       </div>
       
+      <button onClick={() => navigate("/mypage/products")}>
+        📦 제품 등록 내역
+      </button>
+
       <div className={styles.content}>
         {activeTab === "orders" && (
           <div>

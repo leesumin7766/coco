@@ -17,6 +17,6 @@ public class SizeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int name; // 혹시 VARCHAR라면 타입을 String으로 수정
+    private int name;
 }
 

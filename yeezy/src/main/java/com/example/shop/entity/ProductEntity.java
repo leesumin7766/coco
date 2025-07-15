@@ -16,6 +16,10 @@ import java.util.List;
 @NoArgsConstructor
 public class ProductEntity {
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private UserEntity user;  // 🔥 제품 등록자
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

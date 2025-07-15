@@ -6,6 +6,9 @@ import MainPage from './pages/MainPage';
 import MyPage from './pages/MyPage';
 import Header from './components/Header';
 import ProductUpdate from "./pages/ProductUpdate";
+import ProductListPage from "./pages/ProductListPage";
+import ProductSearchResultsPage from './pages/ProductSearchResultsPage';
+import ProductDetailPage from "./pages/ProductDetailPage";
 
 function App() {
   return (
@@ -17,6 +20,9 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/product/new" element={<ProductUpdate />} />
+        <Route path="/mypage/products" element={<ProductListPage />} />
+        <Route path="/search" element={<ProductSearchResultsPage />} />
+        <Route path="/products/:productId" element={<ProductDetailPage />} />
       </Routes>
     </Router>
   );

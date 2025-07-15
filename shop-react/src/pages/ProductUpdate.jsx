@@ -33,12 +33,20 @@ const ProductUpdate = () => {
       });
 
       alert("제품이 등록되었습니다!");
+      // 입력 초기화
+    setName("");
+    setNameKr("");
+    setModelNumber("");
+    setReleasePrice("");
+    setBrandId("");
+    setSizeIds([]);
+    setImageUrls([""]);
     } catch (err) {
-      console.error(err);
-      alert("등록 실패");
+    console.error(err);
+    alert("등록 실패");
     }
   };
-
+   
   const handleImageChange = (index, value) => {
     const updated = [...imageUrls];
     updated[index] = value;
