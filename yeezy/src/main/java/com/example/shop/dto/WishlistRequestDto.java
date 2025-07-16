@@ -4,6 +4,6 @@ import lombok.Getter;
 
 @Getter
 public class WishlistRequestDto {
-    private String productName;
-    private int price;
+    private Long productId;
+    private String size;
 }

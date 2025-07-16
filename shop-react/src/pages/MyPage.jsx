@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "../api/axiosInstance"; // Axios 인스턴스 import
 import styles from "./MyPage.module.css";
 import { useNavigate } from "react-router-dom";
+import ProductCard from "../components/ProductCard";
 
 const MyPage = () => {
   const [activeTab, setActiveTab] = useState("orders");
@@ -79,7 +80,7 @@ const MyPage = () => {
       <div style={{ margin: "1rem 0" }}>
         <button onClick={() => navigate("/product/new")}>📦 제품 등록</button>
       </div>
-      
+
       <button onClick={() => navigate("/mypage/products")}>
         📦 제품 등록 내역
       </button>
@@ -114,17 +115,30 @@ const MyPage = () => {
         )}
 
         {activeTab === "wishlist" && (
-          <div>
-            <h3>위시리스트</h3>
-            {wishlist.length === 0 ? <p>위시리스트가 비어있습니다.</p> : (
-              <ul>
-                {wishlist.map(item => (
-                  <li key={item.id}>{item.productName}</li>
-                ))}
-              </ul>
-            )}
+        <div>
+          <h3>위시리스트</h3>
+          {wishlist.length === 0 ? (
+          <p>위시리스트가 비어있습니다.</p>
+          ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "1rem" }}>
+        {wishlist.map(item => (
+          <div key={item.id} onClick={() => navigate(`/product/${item.productId}`)} style={{ cursor: "pointer" }}>
+            <ProductCard
+              product={{
+                id: item.productId,
+                name: item.productName,
+                name_kr: item.productNameKr,
+                brand: { name: "" }, // brand 정보 없음
+                releasePrice: item.releasePrice,
+                thumbnailUrl: item.imageUrl,
+              }}
+            />
           </div>
-        )}
+        ))}
+      </div>
+    )}
+  </div>
+)}
 
         {activeTab === "sales" && isSeller && (
           <div>

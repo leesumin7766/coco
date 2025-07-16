@@ -3,28 +3,28 @@ package com.example.shop.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
+@Table(name = "wishlists")
 @Getter
+@Setter
 @NoArgsConstructor
 public class WishlistEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    private String productName;
-
-    private int price;
+    private Long id; //DB int, Spring Long 가능 / 반대 오버플로우
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private UserEntity user; // ✅ 변경된 부분
+    private UserEntity user;
 
-    public WishlistEntity(String productName, int price, UserEntity user) {
-        this.productName = productName;
-        this.price = price;
-        this.user = user;
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private ProductEntity product;
+
+    @Column(nullable = false)
+    private String size;
 }
 

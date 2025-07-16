@@ -1,12 +1,10 @@
 package com.example.shop.controller;
 
-import com.example.shop.dto.OrderResponseDto;
-import com.example.shop.dto.PasswordChangeRequestDto;
-import com.example.shop.dto.ProductResponseDto;
-import com.example.shop.dto.UserResponseDto;
+import com.example.shop.dto.*;
 import com.example.shop.security.UserDetailsImpl;
 import com.example.shop.service.MypageService;
 import com.example.shop.service.ProductService;
+import com.example.shop.service.WishlistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,6 +19,7 @@ public class MypageController {
 
     private final MypageService mypageService;
     private final ProductService productService;
+    private final WishlistService wishlistService;
 
     @GetMapping("/orders")
     public List<OrderResponseDto> getOrderHistory(@AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -49,6 +48,11 @@ public class MypageController {
                                                  @RequestBody PasswordChangeRequestDto requestDto) {
         mypageService.changePassword(userDetails.getId(), requestDto.getNewPassword());
         return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
+    }
+
+    @GetMapping("/wishlist")
+    public List<WishlistResponseDto> getWishlist(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return wishlistService.getWishlist(userDetails.getUser().getId());
     }
 
     @GetMapping("/products")
