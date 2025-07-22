@@ -10,8 +10,10 @@ const MyPage = () => {
   const [wishlist, setWishlist] = useState([]);
   const [sales, setSales] = useState([]);
   const [userInfo, setUserInfo] = useState({});
-  const [isSeller, setIsSeller] = useState(false);
   const [password, setPassword] = useState(""); // ✅ 비밀번호 상태 추가
+  const [saleStatus, setsaleStatus] = useState("ALL");
+  const [buys, setBuys] = useState([]);
+  const [buyStatus, setBuyStatus] = useState("ALL");
   const navigate = useNavigate(); // 추가
 
   useEffect(() => {
@@ -19,7 +21,6 @@ const MyPage = () => {
       axios.get("/mypage/info")
         .then((res) => {
           setUserInfo(res.data);
-          setIsSeller(res.data.role === "SELLER");
         })
         .catch((err) => {
           console.error("사용자 정보 로딩 실패", err);
@@ -37,16 +38,42 @@ const MyPage = () => {
     setWishlist(res.data);
   };
 
+  const fetchBuys = async () => {
+    try {
+      const res = await axios.get("/mypage/biddings/buys");
+      setBuys(res.data);
+    } catch (err) {
+      console.error("구매 입찰 내역 로딩 실패", err);
+    }
+  };
   const fetchSales = async () => {
-    const res = await axios.get("/mypage/sales");
-    setSales(res.data);
+    try {
+      const res = await axios.get("/mypage/biddings/sales"); // ✅ 변경된 경로
+      setSales(res.data);
+    } catch (err) {
+      console.error("판매 내역 로딩 실패", err);
+    }
   };
 
+  const handleCancelBidding = async (biddingId) => {
+    const confirm = window.confirm("정말 취소하시겠습니까?");
+    if (!confirm) return;
+
+    try {
+      await axios.put(`/mypage/biddings/${biddingId}/cancel`);
+      alert("취소가 완료되었습니다.");
+      fetchSales(); // 목록 갱신
+    } catch (err) {
+      console.error("취소 실패:", err);
+      alert("취소에 실패했습니다: " + (err.response?.data?.message || err.message));
+    }
+  };
   useEffect(() => {
     if (activeTab === "orders") fetchOrders();
     if (activeTab === "wishlist") fetchWishlist();
-    if (activeTab === "sales" && isSeller) fetchSales();
-  }, [activeTab, isSeller]);
+    if (activeTab === "sales") fetchSales();
+    if (activeTab === "buys") fetchBuys();
+  }, [activeTab]);
 
   const handleChangePassword = async () => {
     if (!password) {
@@ -73,7 +100,8 @@ const MyPage = () => {
       <div className={styles.tabMenu}>
         <button onClick={() => setActiveTab("orders")}>🛒 구매 내역</button>
         <button onClick={() => setActiveTab("wishlist")}>❤️ 위시리스트</button>
-        {isSeller && <button onClick={() => setActiveTab("sales")}>🛍️ 판매 내역</button>}
+        <button onClick={() => setActiveTab("buys")}>💰 구매 등록</button>
+        <button onClick={() => setActiveTab("sales")}>🛍️ 판매 내역</button>
         <button onClick={() => setActiveTab("info")}>🧑 내 정보 수정</button>
       </div>
 
@@ -139,27 +167,94 @@ const MyPage = () => {
     )}
   </div>
 )}
+        {activeTab === "buys" && (
+  <div>
+    <h3>구매 등록 현황</h3>
 
-        {activeTab === "sales" && isSeller && (
+    <div style={{ marginBottom: "1rem" }}>
+      <label>상태 필터: </label>
+      <select value={buyStatus} onChange={(e) => setBuyStatus(e.target.value)}>
+        <option value="ALL">전체</option>
+        <option value="PENDING">등록됨</option>
+        <option value="COMPLETED">거래 완료</option>
+        <option value="CANCELLED">취소됨</option>
+      </select>
+    </div>
+
+    {buys.length === 0 ? (
+      <p>등록된 구매 입찰이 없습니다.</p>
+    ) : (
+      <table>
+        <thead>
+          <tr>
+            <th>상품명</th>
+            <th>사이즈</th>
+            <th>희망가</th>
+            <th>상태</th>
+            <th>등록일</th>
+          </tr>
+        </thead>
+        <tbody>
+          {buys
+            .filter((item) => buyStatus === "ALL" || item.status === buyStatus)
+            .map((item) => (
+              <tr key={item.id}>
+                <td>{item.productName}</td>
+                <td>{item.size}</td>
+                <td>{item.price.toLocaleString()}원</td>
+                <td>{item.status}</td>
+                <td>{new Date(item.createdAt).toLocaleDateString()}</td>
+              </tr>
+            ))}
+        </tbody>
+      </table>
+    )}
+  </div>
+)}
+        {activeTab === "sales" && (
           <div>
-            <h3>판매 내역</h3>
-            {sales.length === 0 ? <p>판매 내역이 없습니다.</p> : (
+            <h3>판매 등록 현황</h3>
+
+            <div style={{ marginBottom: "1rem" }}>
+              <label>상태 필터: </label>
+              <select value={saleStatus} onChange={(e) => setsaleStatus(e.target.value)}>
+                <option value="ALL">전체</option>
+                <option value="PENDING">등록됨</option>
+                <option value="COMPLETED">거래 완료</option>
+                <option value="CANCELLED">취소됨</option>
+              </select>
+            </div>
+
+            {sales.length === 0 ? (
+              <p>등록된 판매 입찰이 없습니다.</p>
+            ) : (
               <table>
                 <thead>
                   <tr>
                     <th>상품명</th>
-                    <th>판매 수량</th>
-                    <th>판매일</th>
+                    <th>사이즈</th>
+                    <th>등록 가격</th>
+                    <th>상태</th>
+                    <th>등록일</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {sales.map(item => (
-                    <tr key={item.id}>
-                      <td>{item.productName}</td>
-                      <td>{item.quantity}</td>
-                      <td>{new Date(item.saleDate).toLocaleDateString()}</td>
-                    </tr>
-                  ))}
+                  {sales
+                    .filter((item) => saleStatus === "ALL" || item.status === saleStatus)
+                    .map((item) => (
+                      <tr key={item.id}>
+                        <td>{item.productName}</td>
+                        <td>{item.size}</td>
+                        <td>{item.price.toLocaleString()}원</td>
+                        <td>{item.status}</td>
+                        <td>{new Date(item.createdAt).toLocaleDateString()}</td>
+                        <td>
+                        {item.status === "PENDING" && (
+                          <button onClick={() => handleCancelBidding(item.id)}>❌ 취소하기</button>
+                        )}
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             )}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Address from '../components/Address';
+import { useNavigate } from 'react-router-dom';
 
 const SignupPage = () => {
   const [form, setForm] = useState({
@@ -8,6 +9,8 @@ const SignupPage = () => {
     name: '',
     address: ''
   });
+
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -26,6 +29,7 @@ const SignupPage = () => {
 
     if (response.ok) {
       alert('회원가입 성공');
+      navigate('/login');
     } else {
       alert('회원가입 실패');
     }

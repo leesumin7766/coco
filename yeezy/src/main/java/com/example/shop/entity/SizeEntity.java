@@ -17,6 +17,6 @@ public class SizeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int name;
+    private String name;
 }
 

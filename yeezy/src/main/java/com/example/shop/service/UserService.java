@@ -23,6 +23,7 @@ public class UserService {
         user.setEmail(requestDto.getEmail());
         user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
         user.setName(requestDto.getName());
+        user.setAddress(requestDto.getAddress());
 
         userRepository.save(user);
     }

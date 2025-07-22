@@ -20,7 +20,7 @@ public class ProductDetailResponseDto {
     private LocalDateTime createdAt;
 
     private List<String> imageUrls;
-    private List<Integer> sizes;
+    private List<String> sizes;
 
     public static ProductDetailResponseDto fromEntity(ProductEntity product) {
         return ProductDetailResponseDto.builder()
