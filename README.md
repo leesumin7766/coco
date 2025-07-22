@@ -78,7 +78,7 @@
 
 ## 🔧 주요 기술 스택
 
-| 분류         | 사용 기술 |
+| 분류         | 사용 기술(예정) |
 |--------------|-----------|
 | Backend      | Spring Boot 3.5.3, JPA, Spring Security, OAuth2 |
 | DB / 캐시     | MariaDB, Redis, Redisson, Lua Script |
