@@ -14,6 +14,10 @@ public class OrderResponseDto {
     private LocalDateTime orderDate;
     private String orderStatus;  // 주문 상태명 추가
 
+    private String size;     // 추가
+    private String seller;   // 추가
+    private Integer price;
+
     public OrderResponseDto(OrderEntity order) {
         // 상품명: order -> bidding -> productSize -> product -> name
         this.productName = order.getBidding()
@@ -31,6 +35,16 @@ public class OrderResponseDto {
         this.orderDate = order.getCreatedAt();
 
         // 주문 상태명
-        this.orderStatus = order.getOrderStatus().getStatus();
+        this.orderStatus = order.getOrderStatus().getOrderStatus();
+
+        this.price = order.getPrice();
+        this.size = order.getProductSize() != null && order.getProductSize().getSize() != null
+                ? order.getProductSize().getSize().getName()
+                : null;
+
+        // 판매자
+        this.seller = order.getSeller() != null
+                ? order.getSeller().getEmail() // 또는 getName(), getNickname()
+                : null;
     }
 }

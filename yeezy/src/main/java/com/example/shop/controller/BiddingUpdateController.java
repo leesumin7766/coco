@@ -1,3 +1,4 @@
+/*
 package com.example.shop.controller;
 
 import com.example.shop.dto.BiddingRequestDto;
@@ -26,3 +27,4 @@ public class BiddingUpdateController {
         return ResponseEntity.ok("입찰 등록 성공");
     }
 }
+*/

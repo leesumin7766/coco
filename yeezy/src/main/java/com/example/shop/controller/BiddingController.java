@@ -10,29 +10,22 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/mypage/biddings")
+@RequestMapping("/api/biddings")
 @RequiredArgsConstructor
 public class BiddingController {
 
     private final BiddingService biddingService;
 
-    @GetMapping("/buys")
-    public List<BiddingResponseDto> getMyBuys(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return biddingService.getBuysByUser(userDetails.getUser());
-    }
-
-    @GetMapping("/sales")
-    public List<BiddingResponseDto> getMySales(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return biddingService.getSalesByUser(userDetails.getUser());
-    }
     @PostMapping
-    public ResponseEntity<String> createBidding(
+    public ResponseEntity<Map<String, Object>> createBidding(
             @RequestBody BiddingRequestDto requestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        biddingService.createBidding(requestDto, userDetails.getUser());
-        return ResponseEntity.ok("입찰 등록 성공");
+        Map<String, Object> result = biddingService.createBidding(requestDto, userDetails.getUser());
+
+        return ResponseEntity.ok(result);
     }
 
     @PutMapping("/{biddingId}/cancel")
@@ -41,6 +34,14 @@ public class BiddingController {
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
         biddingService.cancelBidding(biddingId, userDetails.getUser());
         return ResponseEntity.ok("입찰이 취소되었습니다.");
+    }
+
+    @GetMapping("/summary")
+    public ResponseEntity<?> getBiddingSummary(
+            @RequestParam Long productId,
+            @RequestParam String size
+    ) {
+        return ResponseEntity.ok(biddingService.getBiddingSummary(productId, size));
     }
 
 }

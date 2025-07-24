@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "../api/axiosInstance";
 
@@ -12,7 +12,10 @@ const ProductDetailPage = () => {
   const [showSellModal, setShowSellModal] = useState(false); // 판매등록용
   const [buyPrice, setBuyPrice] = useState("");
   const [showBuyModal, setShowBuyModal] = useState(false); // 구매전용
+  const [lowestAsk, setLowestAsk] = useState(null);
+  const [highestBid, setHighestBid] = useState(null);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProductDetail = async () => {
@@ -44,45 +47,70 @@ const ProductDetailPage = () => {
     }
   };
 
-  const handleBuy = async () => {
-  if (!selectedSize || !buyPrice) {
-    return alert("사이즈와 가격을 모두 입력해주세요.");
-  }
+  useEffect(() => {
+    if (selectedSize) {
+      axios.get(`/biddings/summary`, {
+        params: { productId, size: selectedSize }
+      })
+      .then((res) => {
+        setLowestAsk(res.data.lowestAsk || null);
+        setHighestBid(res.data.highestBid || null);
+      })
+      .catch(() => {
+        setLowestAsk(null);
+        setHighestBid(null);
+      });
+    }
+  }, [selectedSize, productId]);
 
-  try {
-    await axios.post("/biddings", {
-      productId: Number(productId),
-      size: selectedSize,
-      price: parseInt(buyPrice, 10),
-      position: "BUY",
-    });
-    alert("구매 입찰이 완료되었습니다.");
-    setShowBuyModal(false);
-    setSelectedSize("");
-    setBuyPrice("");
-  } catch (err) {
-    alert("구매 등록 실패");
-  }
+  const isBuyNowAvailable = () =>
+    !!lowestAsk &&
+    !!buyPrice &&
+    parseInt(buyPrice, 10) >= parseInt(lowestAsk, 10);
+  const isSellNowAvailable = () => highestBid && sellPrice && parseInt(sellPrice, 10) <= highestBid;
+
+  const handleBuy = async () => {
+    if (!selectedSize || !buyPrice) return alert("사이즈와 가격을 모두 입력해주세요.");
+    try {
+      const res = await axios.post("/biddings", {
+        productId: Number(productId),
+        size: selectedSize,
+        price: parseInt(buyPrice, 10),
+        position: "BUY"
+      });
+
+      if (res.data.matched) {
+        const orderId = res.data.orderId; // ✅ 백엔드에서 orderId 리턴되도록 해야 함
+        console.log("응답 받은 orderId:", orderId);
+        if (!orderId) return alert("orderId가 존재하지 않습니다.");
+        navigate(`/order/${orderId}`);    // ✅ 결제 페이지로 이동
+      } else {
+        alert("구매 입찰이 등록되었습니다.");
+      }
+
+      setShowBuyModal(false);
+      setSelectedSize("");
+      setBuyPrice("");
+    } catch {
+      alert("구매 요청 실패");
+    }
   };
 
   const handleSell = async () => {
-    if (!selectedSize || !sellPrice) {
-      return alert("사이즈와 가격을 모두 입력해주세요.");
-    }
-
+    if (!selectedSize || !sellPrice) return alert("사이즈와 가격을 모두 입력해주세요.");
     try {
-      await axios.post("/biddings", {
+      const res = await axios.post("/biddings", {
         productId: Number(productId),
         size: selectedSize,
         price: parseInt(sellPrice, 10),
         position: "SELL"
       });
-      alert("판매 등록이 완료되었습니다.");
+      alert(res.data.matched ? "즉시 판매가 완료되었습니다!" : "판매 등록이 완료되었습니다.");
       setShowSellModal(false);
       setSelectedSize("");
       setSellPrice("");
-    } catch (err) {
-      alert("판매 등록 실패");
+    } catch {
+      alert("판매 요청 실패");
     }
   };
 
@@ -138,69 +166,42 @@ const ProductDetailPage = () => {
         </div>
       )}
 
+      {/* 구매 모달 */}
       {showBuyModal && (
         <div style={modalBackdropStyle}>
           <div style={modalBoxStyle}>
             <h3>구매 등록</h3>
-            <label>사이즈 선택</label>
             <div style={sizeButtonWrapper}>
-              {product.sizes.map((size, idx) => (
-                <button
-                  key={idx}
-                  style={getSizeButtonStyle(size === selectedSize)}
-                  onClick={() => setSelectedSize(size)}
-                >
-                  {size}
-                </button>
+              {product.sizes.map((size) => (
+                <button key={size} style={getSizeButtonStyle(size === selectedSize)} onClick={() => setSelectedSize(size)}>{size}</button>
               ))}
             </div>
-
-            <label style={{ marginTop: "1rem" }}>희망 구매가</label>
-            <input
-              type="number"
-              value={buyPrice}
-              onChange={(e) => setBuyPrice(e.target.value)}
-              placeholder="예: 250000"
-              style={{ width: "100%", marginTop: "0.5rem", padding: "0.5rem" }}
-            />
-
+            <input type="number" value={buyPrice} onChange={(e) => setBuyPrice(e.target.value)} placeholder="희망 구매가" />
             <div style={modalButtonRow}>
-              <button onClick={handleBuy}>구매 등록</button>
+              <button onClick={handleBuy} disabled={!buyPrice} style={{ backgroundColor: isBuyNowAvailable() ? "black" : "gray", color: "white" }}>
+                {isBuyNowAvailable() ? "즉시 구매" : "구매 등록"}
+              </button>
               <button onClick={() => setShowBuyModal(false)}>닫기</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 판매 등록 모달 */}
+      {/* 판매 모달 */}
       {showSellModal && (
         <div style={modalBackdropStyle}>
           <div style={modalBoxStyle}>
             <h3>판매 등록</h3>
-            <label>사이즈 선택</label>
             <div style={sizeButtonWrapper}>
-              {product.sizes.map((size, idx) => (
-                <button
-                  key={idx}
-                  style={getSizeButtonStyle(size === selectedSize)}
-                  onClick={() => setSelectedSize(size)}
-                >
-                  {size}
-                </button>
+              {product.sizes.map((size) => (
+                <button key={size} style={getSizeButtonStyle(size === selectedSize)} onClick={() => setSelectedSize(size)}>{size}</button>
               ))}
             </div>
-
-            <label style={{ marginTop: "1rem" }}>희망 판매가</label>
-            <input
-              type="number"
-              value={sellPrice}
-              onChange={(e) => setSellPrice(e.target.value)}
-              placeholder="예: 300000"
-              style={{ width: "100%", marginTop: "0.5rem", padding: "0.5rem" }}
-            />
-
+            <input type="number" value={sellPrice} onChange={(e) => setSellPrice(e.target.value)} placeholder="희망 판매가" />
             <div style={modalButtonRow}>
-              <button onClick={handleSell}>판매 등록</button>
+              <button onClick={handleSell} disabled={!sellPrice} style={{ backgroundColor: isSellNowAvailable() ? "black" : "gray", color: "white" }}>
+                {isSellNowAvailable() ? "즉시 판매" : "판매 등록"}
+              </button>
               <button onClick={() => setShowSellModal(false)}>닫기</button>
             </div>
           </div>

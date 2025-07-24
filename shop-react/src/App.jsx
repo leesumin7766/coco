@@ -9,6 +9,7 @@ import ProductUpdate from "./pages/ProductUpdate";
 import ProductListPage from "./pages/ProductListPage";
 import ProductSearchResultsPage from './pages/ProductSearchResultsPage';
 import ProductDetailPage from "./pages/ProductDetailPage";
+import OrderPage from './pages/OrderPage';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/mypage/products" element={<ProductListPage />} />
         <Route path="/search" element={<ProductSearchResultsPage />} />
         <Route path="/products/:productId" element={<ProductDetailPage />} />
+        <Route path="/order/:orderId" element={<OrderPage />} />
       </Routes>
     </Router>
   );

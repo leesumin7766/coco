@@ -7,6 +7,7 @@ import com.example.shop.entity.BiddingPositionEntity;
 import com.example.shop.entity.StatusEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
 import java.util.List;
 
 public interface BiddingRepository extends JpaRepository<BiddingEntity, Long> {
@@ -23,5 +24,15 @@ public interface BiddingRepository extends JpaRepository<BiddingEntity, Long> {
             StatusEntity status
     );
 
-    // 필요에 따라 동적 쿼리 추가 가능
+    Optional<BiddingEntity> findTopByProductSizeAndPosition_PositionAndStatusOrderByPriceAsc(
+            ProductSizeEntity productSize,
+            String position,
+            StatusEntity status
+    );
+
+    Optional<BiddingEntity> findTopByProductSizeAndPosition_PositionAndStatusOrderByPriceDesc(
+            ProductSizeEntity productSize,
+            String position,
+            StatusEntity status
+    );
 }

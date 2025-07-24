@@ -1,16 +1,16 @@
 package com.example.shop.controller;
 
 import com.example.shop.dto.*;
+import com.example.shop.entity.TradeEntity;
 import com.example.shop.security.UserDetailsImpl;
-import com.example.shop.service.MypageService;
-import com.example.shop.service.ProductService;
-import com.example.shop.service.WishlistService;
+import com.example.shop.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/mypage")
@@ -20,6 +20,8 @@ public class MypageController {
     private final MypageService mypageService;
     private final ProductService productService;
     private final WishlistService wishlistService;
+    private final TradeService tradeService;
+    private final BiddingService biddingService;
 
     @GetMapping("/orders")
     public List<OrderResponseDto> getOrderHistory(@AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -60,6 +62,26 @@ public class MypageController {
         Long userId = userDetails.getId();
         List<ProductResponseDto> products = productService.getProductsByUserId(userId);
         return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/trades")
+    public List<TradeResponseDto> getUserTrades(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        List<TradeEntity> trades = tradeService.getUserTrades(userDetails.getUser());
+        return trades.stream()
+                .map(trade -> TradeResponseDto.fromEntity(trade, userDetails.getUser()))
+                .collect(Collectors.toList());
+    }
+
+    // ✅ 추가: 내가 등록한 구매 입찰 조회
+    @GetMapping("/biddings/buys")
+    public List<BiddingResponseDto> getMyBuys(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return biddingService.getBuysByUser(userDetails.getUser());
+    }
+
+    // ✅ 추가: 내가 등록한 판매 입찰 조회
+    @GetMapping("/biddings/sales")
+    public List<BiddingResponseDto> getMySales(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return biddingService.getSalesByUser(userDetails.getUser());
     }
 
 }

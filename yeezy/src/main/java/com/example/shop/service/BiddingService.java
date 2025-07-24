@@ -5,12 +5,16 @@ import com.example.shop.dto.BiddingResponseDto;
 import com.example.shop.entity.*;
 import com.example.shop.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+@Setter
 @Service
 @RequiredArgsConstructor
 public class BiddingService {
@@ -21,8 +25,13 @@ public class BiddingService {
     private final BiddingPositionRepository positionRepository;
     private final StatusRepository statusRepository;
     private final SizeRepository sizeRepository;
+    private final OrderRepository orderRepository;
+    private final OrderStatusRepository orderStatusRepository;
 
-    public void createBidding(BiddingRequestDto dto, UserEntity user) {
+    public Map<String, Object> createBidding(BiddingRequestDto dto, UserEntity user) {
+        boolean isMatched = false;
+        Long createdOrderId = null;
+
         // 1. 상품 + 사이즈로 ProductSize 찾기
         ProductEntity product = productRepository.findById(dto.getProductId())
                 .orElseThrow(() -> new IllegalArgumentException("상품 없음"));
@@ -35,21 +44,91 @@ public class BiddingService {
         BiddingPositionEntity position = positionRepository.findByPosition(dto.getPosition().toUpperCase())
                 .orElseThrow(() -> new IllegalArgumentException("잘못된 포지션"));
 
-        // 3. 상태 (ACTIVE)
-        StatusEntity status = statusRepository.findByName("PENDING")
-                .orElseThrow(() -> new IllegalArgumentException("입찰 상태(PENDING)가 존재하지 않습니다."));
+        // 3. 상태
+        StatusEntity pendingStatus = statusRepository.findByName("PENDING")
+                .orElseThrow(() -> new IllegalArgumentException("PENDING 상태 없음"));
+        StatusEntity matchedStatus = statusRepository.findByName("MATCHED")
+                .orElseThrow(() -> new IllegalArgumentException("MATCHED 상태 없음"));
 
-        // 4. 저장
-        BiddingEntity bidding = new BiddingEntity();
-        bidding.setUser(user);
-        bidding.setProductSize(productSize);
-        bidding.setPosition(position);
-        bidding.setStatus(status);
-        bidding.setPrice(dto.getPrice());
-        bidding.setCreatedAt(LocalDateTime.now());
-        bidding.setUpdatedAt(LocalDateTime.now());
+        OrderStatusEntity paymentPendingStatus = orderStatusRepository.findByOrderStatus("PAYMENT_PENDING")
+                .orElseThrow(() -> new IllegalArgumentException("PAYMENT_PENDING 주문 상태 없음"));
+        // 4. 저장할 BiddingEntity 생성
+        BiddingEntity newBidding = new BiddingEntity();
+        newBidding.setUser(user);
+        newBidding.setProductSize(productSize);
+        newBidding.setPosition(position);
+        newBidding.setPrice(dto.getPrice());
+        newBidding.setCreatedAt(LocalDateTime.now());
+        newBidding.setUpdatedAt(LocalDateTime.now());
 
-        biddingRepository.save(bidding);
+        // ✅ 즉시 거래 로직
+        if (position.getPosition().equals("BUY")) {
+            // 구매 입찰 → 가장 낮은 판매 입찰 찾기
+            BiddingEntity matchedSell = biddingRepository
+                    .findTopByProductSizeAndPosition_PositionAndStatusOrderByPriceAsc(
+                            productSize, "SELL", pendingStatus)
+                    .filter(sell -> dto.getPrice() >= sell.getPrice())
+                    .orElse(null);
+
+            if (matchedSell != null) {
+                matchedSell.setStatus(matchedStatus);
+                matchedSell.setUpdatedAt(LocalDateTime.now());
+                newBidding.setStatus(matchedStatus);
+                newBidding = biddingRepository.save(newBidding);
+                biddingRepository.save(matchedSell);
+                isMatched = true;
+
+                OrderEntity order = new OrderEntity();
+                order.setBuyer(user);
+                order.setSeller(matchedSell.getUser());
+                order.setProductSize(productSize);
+                order.setPrice(matchedSell.getPrice());
+                order.setCreatedAt(LocalDateTime.now());
+                order.setOrderStatus(paymentPendingStatus);
+                order.setBidding(newBidding);
+                OrderEntity savedOrder = orderRepository.save(order);
+                createdOrderId = savedOrder.getId();
+            } else {
+                newBidding.setStatus(pendingStatus);
+                biddingRepository.save(newBidding);
+            }
+
+        } else if (position.getPosition().equals("SELL")) {
+            // 판매 입찰 → 가장 높은 구매 입찰 찾기
+            BiddingEntity matchedBuy = biddingRepository
+                    .findTopByProductSizeAndPosition_PositionAndStatusOrderByPriceDesc(
+                            productSize, "BUY", pendingStatus)
+                    .filter(buy -> dto.getPrice() <= buy.getPrice())
+                    .orElse(null);
+
+            if (matchedBuy != null) {
+                matchedBuy.setStatus(matchedStatus);
+                matchedBuy.setUpdatedAt(LocalDateTime.now());
+                newBidding.setStatus(matchedStatus);
+                newBidding = biddingRepository.save(newBidding);
+                biddingRepository.save(matchedBuy);
+                isMatched = true;
+
+                OrderEntity order = new OrderEntity();
+                order.setBuyer(matchedBuy.getUser());
+                order.setSeller(user); // 판매자 = 현재 사용자
+                order.setProductSize(productSize);
+                order.setPrice(matchedBuy.getPrice());
+                order.setCreatedAt(LocalDateTime.now());
+                order.setOrderStatus(paymentPendingStatus);
+                order.setBidding(newBidding);
+                OrderEntity savedOrder = orderRepository.save(order);
+                createdOrderId = savedOrder.getId();
+            } else {
+                newBidding.setStatus(pendingStatus);
+                biddingRepository.save(newBidding);
+            }
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("matched", isMatched);
+        result.put("orderId", createdOrderId);
+        return result;
     }
 
     public List<BiddingResponseDto> getBuysByUser(UserEntity user) {
@@ -94,6 +173,33 @@ public class BiddingService {
         bidding.setStatus(cancelledStatus);
         bidding.setUpdatedAt(LocalDateTime.now());
         biddingRepository.save(bidding);
+    }
+
+    public Map<String, Integer> getBiddingSummary(Long productId, String sizeName) {
+        ProductEntity product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("상품 없음"));
+        SizeEntity sizeEntity = sizeRepository.findByName(sizeName)
+                .orElseThrow(() -> new IllegalArgumentException("사이즈 없음"));
+        ProductSizeEntity productSize = productSizeRepository.findByProductAndSize(product, sizeEntity)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사이즈 없음"));
+
+        StatusEntity pendingStatus = statusRepository.findByName("PENDING")
+                .orElseThrow(() -> new IllegalArgumentException("PENDING 상태 없음"));
+
+        // 가장 낮은 판매 입찰가
+        Integer lowestAsk = biddingRepository.findTopByProductSizeAndPosition_PositionAndStatusOrderByPriceAsc(
+                productSize, "SELL", pendingStatus
+        ).map(BiddingEntity::getPrice).orElse(null);
+
+        // 가장 높은 구매 입찰가
+        Integer highestBid = biddingRepository.findTopByProductSizeAndPosition_PositionAndStatusOrderByPriceDesc(
+                productSize, "BUY", pendingStatus
+        ).map(BiddingEntity::getPrice).orElse(null);
+
+        Map<String, Integer> summary = new HashMap<>();
+        summary.put("lowestAsk", lowestAsk);
+        summary.put("highestBid", highestBid);
+        return summary;
     }
 
 }
