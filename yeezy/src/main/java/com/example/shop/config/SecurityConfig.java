@@ -43,6 +43,7 @@ public class SecurityConfig {
                                 "/signup",
                                 "/api/auth/**",
                                 "/api/user/me",
+                                "/api/payments/confirm",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**").permitAll() // 로그인/회원가입 API는 허용

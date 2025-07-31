@@ -23,17 +23,36 @@ const OrderPage = () => {
 
   const handlePayment = async () => {
     try {
-      // 주소 유효성 체크
       if (!address) return alert("배송지를 입력해주세요.");
 
-      // Toss API 연동을 위한 결제 준비 요청 (백엔드에서 처리 가능)
-      const res = await axios.post(`/api/payments/prepare`, {
+      const res = await axios.post(`/payments/prepare`, {
         orderId,
         address,
       });
 
-      window.location.href = res.data.paymentUrl; // Toss 결제 페이지 이동
+      const {
+        orderId: tossOrderId,
+        amount,
+        orderName,
+        customerEmail,
+        customerName,
+      } = res.data;
+
+      console.log("Sending orderId:", tossOrderId);
+
+      const tossPayments = window.TossPayments("test_ck_QbgMGZzorzKEz767mm6k8l5E1em4");
+
+      await tossPayments.requestPayment("카드", {
+        amount,
+        orderId: tossOrderId,
+        orderName,
+        customerEmail,
+        customerName,
+        successUrl: `${window.location.origin}/payments/success`,
+        failUrl: `${window.location.origin}/payments/fail`,
+      });
     } catch (err) {
+      console.error(err);
       alert("결제 요청 실패");
     }
   };
@@ -44,12 +63,11 @@ const OrderPage = () => {
       alert("주문이 취소되었습니다.");
       navigate("/mypage");
     } catch (err) {
-      alert("취소 실패");
+      alert("주문 취소에 실패했습니다.");
     }
   };
 
   const handleAddressSearch = () => {
-    // 카카오맵 주소 검색 (window daum 우편번호 서비스 활용)
     new window.daum.Postcode({
       oncomplete: function (data) {
         setAddress(data.address);
