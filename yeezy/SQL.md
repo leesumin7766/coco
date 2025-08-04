@@ -28,6 +28,27 @@ INSERT INTO sizes (id, name) VALUES
 (8, '280'),
 (9, '290');
 SELECT * FROM sizes;
+
+INSERT INTO order_status (id, order_status) VALUES
+(1, 'PAYMENT_PENDING'),
+(2, 'PAYMENT_SUCCESS'),
+(3, 'DELIVERED'),
+(4, 'ORDER_CANCELLED');
+
+ALTER TABLE users MODIFY id INT NOT NULL AUTO_INCREMENT;
+ALTER TABLE users MODIFY COLUMN id NULL;
+ALTER TABLE users MODIFY COLUMN created_at NULL;
+alter table orders add column order_date DATETIME;
+ALTER TABLE product_images MODIFY image_url TEXT;
+ALTER TABLE users ADD COLUMN role VARCHAR(20) DEFAULT 'USER';
+ALTER TABLE wishlists ADD COLUMN size VARCHAR(10) NOT NULL;
+
+ALTER TABLE products ADD COLUMN name_kr VARCHAR(255);
+
+ALTER TABLE orders
+ADD COLUMN price INT,
+ADD COLUMN product_size_id INT;
+
 # 테이블 추가
 CREATE TABLE `status` (
 `id` INT NOT NULL AUTO_INCREMENT,
