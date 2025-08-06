@@ -122,17 +122,17 @@ CREATE TABLE IF NOT EXISTS product_images (
 );
 
 -- 14) 초기 데이터 삽입
-INSERT IGNORE INTO order_status (id, order_status) VALUES
+INSERT INTO order_status (id, order_status) VALUES
     (1, 'PAYMENT_PENDING'),
     (2, 'PAYMENT_SUCCESS'),
     (3, 'DELIVERED'),
     (4, 'ORDER_CANCELLED');
 
-INSERT IGNORE INTO bidding_positions (position) VALUES
+INSERT INTO bidding_positions (position) VALUES
     ('SELL'),
     ('BUY');
 
-INSERT IGNORE INTO brands (id, name) VALUES
+INSERT INTO brands (id, name) VALUES
     (1, 'Nike'),
     (2, 'Adidas'),
     (3, 'New Balance'),
@@ -140,7 +140,7 @@ INSERT IGNORE INTO brands (id, name) VALUES
     (5, 'Reebok'),
     (10, 'others');
 
-INSERT IGNORE INTO sizes (id, name) VALUES
+INSERT INTO sizes (id, name) VALUES
     (1, 210),
     (2, 220),
     (3, 230),
@@ -151,7 +151,7 @@ INSERT IGNORE INTO sizes (id, name) VALUES
     (8, 280),
     (9, 290);
 
-INSERT IGNORE INTO status (name) VALUES
+INSERT INTO status (name) VALUES
     ('PENDING'),
     ('MATCHED'),
     ('CANCELLED'),

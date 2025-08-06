@@ -27,7 +27,7 @@ public class BiddingEntity {
     private StatusEntity status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bidding_posion_id")
+    @JoinColumn(name = "bidding_position_id")
     private BiddingPositionEntity position;
 
     @ManyToOne(fetch = FetchType.LAZY)
