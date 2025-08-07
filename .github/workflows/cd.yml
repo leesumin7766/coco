@@ -62,7 +62,7 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           script: |
             set -euxo pipefail
-            cd ~/coco   # ← docker-compose.yml 있는 경로
+            cd /home/ubuntu/coco   # ← docker-compose.yml 있는 경로
             docker pull ${{ env.IMAGE_BACKEND }}:latest
             docker pull ${{ env.IMAGE_FRONTEND }}:latest
             docker compose up -d
