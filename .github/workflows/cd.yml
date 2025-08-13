@@ -46,6 +46,8 @@ jobs:
           context: ./shop-react
           file: ./shop-react/Dockerfile
           push: true
+          build-args: |
+            REACT_APP_API_URL=/api
           tags: |
             ${{ env.IMAGE_FRONTEND }}:latest
             ${{ env.IMAGE_FRONTEND }}:${{ env.TAG }}
