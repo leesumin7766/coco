@@ -1,8 +1,14 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:8080/api", // 백엔드 API의 base URL
+  baseURL: "/api",              // ✅ Nginx가 /api를 backend로 프록시
+  // withCredentials: true,     // ✅ 쿠키 기반 인증이면 주석 해제
+  timeout: 10000,               // (선택) 타임아웃
+  headers: {
+    Accept: "application/json",
+  },
 });
+
 
 // 요청 시 accessToken 자동 주입
 axiosInstance.interceptors.request.use(
