@@ -1,34 +1,37 @@
-// com.example.shop.config.CorsConfig.java
+// src/main/java/com/example/shop/config/CorsConfig.java
 package com.example.shop.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
 @Configuration
-public class CorsConfig implements WebMvcConfigurer {
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry
-                .addMapping("/**")                       // 모든 경로에 대해
-                .allowedOrigins(
-                        "http://localhost:*",           // 로컬 개발
-//                        "http://3.38.108.76:3000",
-//                        "http://3.38.108.76:80",
-//                        "http://3.38.108.76:22", // 실제 배포된 프론트
-                        "http://3.37.52.16",        // Nginx 80 (포트 표기 없이)
-                        "http://3.37.52.16:3000"    // dev server를 이런 식으로 띄운다면
-                        // "https://your-domain.com" // HTTPS 사용 시 추가
-                )
-                .allowedMethods("GET","POST","PUT","DELETE","OPTIONS")
-                .allowedHeaders("*")
-                .exposedHeaders("Authorization","Location")
-                .allowCredentials(true);
+public class CorsConfig {
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration c = new CorsConfiguration();
+
+        // 자격증명(쿠키/세션/JWT-쿠키) 사용 시: allowedOrigins("*") 금지
+        // 80 포트는 ':80' 없이 "http://IP"가 오리진입니다.
+        c.setAllowedOriginPatterns(List.of(
+                "http://3.37.52.16",   // Nginx 80 (포트 표기 없음)
+                "http://3.37.52.16:*", // (선택) dev 포트(예: 3000)
+                "http://localhost:*"   // 로컬 개발
+                // "https://your-domain.com" // 도메인/HTTPS 있다면 추가
+        ));
+
+        c.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        c.setAllowedHeaders(List.of("*"));
+        c.setExposedHeaders(List.of("Authorization", "Location"));
+        c.setAllowCredentials(true); // 쿠키/세션/JWT-쿠키 쓸 때 필요
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", c);
+        return source;
     }
 }
