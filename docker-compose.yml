@@ -15,13 +15,10 @@ services:
       - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
 
   backend:
-    build:
-      context: ./yeezy
-      dockerfile: Dockerfile
-    image: coco-backend:latest
+    image: docker.io/leesumin7766/coco-backend:latest
     container_name: coco-backend
     ports:
-      - "8080:8080"
+        - "8080:8080"
     environment:
       # 호스트 로컬에 띄운 MariaDB 연결 (application.yml 대신 덮어쓰기)
       - SPRING_DATASOURCE_URL=jdbc:mariadb://db:3306/yeezydb
@@ -46,16 +43,11 @@ services:
       - redis
 
   frontend:
-    build:
-      context: ./shop-react
-      dockerfile: Dockerfile
-      args:
-        # React 빌드 시점에 API 호출 주소 주입
-        - REACT_APP_API_URL=http://backend:8080
-    image: coco-frontend:latest
+    image: docker.io/leesumin7766/coco-frontend:latest
+
     container_name: coco-frontend
     ports:
-      - "3000:80" #실험 3001
+      - "80:80"
     depends_on:
       - backend
 
