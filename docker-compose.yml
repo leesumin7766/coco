@@ -15,7 +15,7 @@ services:
       - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
 
   backend:
-    image: docker.io/leesumin7766/coco-backend:latest
+    image: docker.io/sumin19987766/coco-backend:latest
     container_name: coco-backend
     restart: always
     ports:
@@ -44,7 +44,7 @@ services:
       - redis
 
   frontend:
-    image: docker.io/leesumin7766/coco-frontend:latest
+    image: docker.io/sumin19987766/coco-frontend:latest
 
     container_name: coco-frontend
     restart: always
