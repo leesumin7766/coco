@@ -52,6 +52,7 @@ public class SecurityConfig {
                                 "/images/**").permitAll() // 로그인/회원가입 API는 허용
 
                         .requestMatchers("/admin/**", "/api/mypage/**", "/user/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/brands/**").permitAll()
                         .anyRequest().authenticated() // 그 외 인증 필요
                 )
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class); // JWT 필터 등록
