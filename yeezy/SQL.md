@@ -13,8 +13,8 @@ INSERT INTO brands (id, name) VALUES
 (2, 'Adidas'),
 (3, 'New Balance'),
 (4, 'Puma'),
-(5, 'Reebok');
-
+(5, 'Reebok'),
+(10, 'others');
 SELECT * from brands;
 # 사이즈 추가
 INSERT INTO sizes (id, name) VALUES
