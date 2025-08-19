@@ -23,6 +23,7 @@ services:
     expose:
       - "8080"
     environment:
+      - SPRING_PROFILES_ACTIVE=prod
       # 호스트 로컬에 띄운 MariaDB 연결 (application.yml 대신 덮어쓰기)
       - SPRING_DATASOURCE_URL=jdbc:mariadb://db:3306/yeezydb
       - SPRING_DATASOURCE_USERNAME=root
