@@ -87,7 +87,7 @@ spring:
   # data.sql 실행
   sql:
     init:
-      mode: always
+      mode: never
       data-locations: classpath:/data.sql
   jpa:
     defer-datasource-initialization: true
