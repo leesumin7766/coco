@@ -27,6 +27,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private static final String[] EXCLUDE_PATTERNS = {
             "/", "/login", "/signup",
             "/api/auth/**",
+            "/api/brands/**",
+            "/api/products/**",
             "/css/**", "/js/**", "/images/**"
     };
 

@@ -42,18 +42,16 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers(
                                 "/",
-                                "/products/**",      // 상품 목록 및 상세 페이지
                                 "/cart/**",          // 장바구니 기능 (필요하면 인증 없이도 허용)
                                 "/login",
                                 "/signup",
                                 "/api/auth/**",
-                                "/api/user/me",
                                 "/api/payments/confirm",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**").permitAll() // 로그인/회원가입 API는 허용
 
-                        .requestMatchers("/admin/**", "/api/mypage/**", "/user/**").authenticated()
+                        .requestMatchers("/admin/**", "/api/mypage/**", "/api/user/me", "/user/**").authenticated()
                         .anyRequest().authenticated() // 그 외 인증 필요
                 )
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class); // JWT 필터 등록
