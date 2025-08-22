@@ -1,3 +1,5 @@
+-- 개발 환경 dev에서만 초기 데이터 세팅용
+
 -- 1) 데이터베이스 생성 및 활성화
 CREATE DATABASE IF NOT EXISTS yeezydb;
 USE yeezydb;
