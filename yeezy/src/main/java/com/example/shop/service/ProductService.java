@@ -6,7 +6,7 @@ import com.example.shop.dto.ProductResponseDto;
 import com.example.shop.dto.ProductSearchResponseDto;
 import com.example.shop.entity.*;
 import com.example.shop.repository.*;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -64,6 +64,29 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+    // ✅ 마이페이지: fetch join + readOnly 트랜잭션
+    @Transactional(readOnly = true)
+    public List<ProductResponseDto> getProductsByUserId(Long userId) {
+        List<ProductEntity> products = productRepository.findAllByUserIdWithImages(userId);
+        return products.stream()
+                .map(ProductResponseDto::fromEntity) // fromEntity 내부에서 brand, productImages 접근해도 안전
+                .toList();
+    }
+
+    // ✅ 상세: fetch join + readOnly 트랜잭션
+    @Transactional(readOnly = true)
+    public ProductDetailResponseDto getProductDetail(Long productId) {
+        ProductEntity product = productRepository.findDetailById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 상품이 존재하지 않습니다."));
+        return ProductDetailResponseDto.fromEntity(product);
+    }
+
+    // (예시) 검색 — 기존 그대로
+    @Transactional(readOnly = true)
+    public List<ProductSearchResponseDto> searchProducts(String query) {
+        return productRepository.searchByNameOrModel(query);
+    }
+    /*
     public List<ProductResponseDto> getProductsByUserId(Long userId) {
         List<ProductEntity> products = productRepository.findByUserId(userId);
         return products.stream()
@@ -81,5 +104,5 @@ public class ProductService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 상품이 존재하지 않습니다."));
         return ProductDetailResponseDto.fromEntity(product);
     }
-
+    */
 }

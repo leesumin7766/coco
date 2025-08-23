@@ -37,6 +37,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 X
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // ★ 프리플라이트 허용
                         .requestMatchers(HttpMethod.GET, "/api/brands/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
