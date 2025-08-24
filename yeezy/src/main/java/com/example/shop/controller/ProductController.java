@@ -28,7 +28,7 @@ public class ProductController {
     }
     @GetMapping("/search")
     public ResponseEntity<?> searchProducts(@RequestParam("query") String query) {
-        return ResponseEntity.ok(productService.searchProductsByNameOrModel(query));
+        return ResponseEntity.ok(productService.searchProducts(query));
     }
     @GetMapping("/{productId}")
     public ResponseEntity<ProductDetailResponseDto> getProductDetail(@PathVariable Long productId) {
