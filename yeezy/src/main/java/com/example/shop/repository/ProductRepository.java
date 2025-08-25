@@ -49,8 +49,6 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
            FROM ProductEntity p
            LEFT JOIN FETCH p.brand
            LEFT JOIN FETCH p.productImages
-           LEFT JOIN FETCH p.productSizes ps
-           LEFT JOIN FETCH ps.size
            WHERE p.id = :id
            """)
     Optional<ProductEntity> findDetailById(@Param("id") Long id);

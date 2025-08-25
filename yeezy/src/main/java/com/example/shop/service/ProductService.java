@@ -81,7 +81,7 @@ public class ProductService {
         return ProductDetailResponseDto.fromEntity(product);
     }
 
-    // (예시) 검색 — 기존 그대로
+    // 검색 — 기존 그대로
     @Transactional(readOnly = true)
     public List<ProductSearchResponseDto> searchProducts(String query) {
         return productRepository.searchByNameOrModel(query);
