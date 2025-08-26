@@ -23,6 +23,6 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
         """)
     Optional<OrderEntity> findDetailById(@Param("id") Long id);
 
-    // 결제용 비즈니스 키 조회 (기존 로직 유지)
-    Optional<OrderEntity> findByOrderId(String orderId);
+//    // 결제용 비즈니스 키 조회 (기존 로직 유지)
+//    Optional<OrderEntity> findByOrderId(String orderId);
 }
