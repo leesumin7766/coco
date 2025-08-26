@@ -41,6 +41,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // ★ 프리플라이트 허용
                         .requestMatchers(HttpMethod.GET, "/api/brands/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/products/**").authenticated()
                         .requestMatchers(
                                 "/",
                                 "/cart/**",          // 장바구니 기능 (필요하면 인증 없이도 허용)

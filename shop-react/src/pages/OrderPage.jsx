@@ -59,7 +59,7 @@ const OrderPage = () => {
 
   const handleCancel = async () => {
     try {
-      await axios.patch(`/api/orders/${orderId}/cancel`);
+      await axios.patch(`/orders/${orderId}/cancel`);
       alert("주문이 취소되었습니다.");
       navigate("/mypage");
     } catch (err) {
