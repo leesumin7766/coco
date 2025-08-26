@@ -10,7 +10,18 @@ import java.util.List;
 import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
-    List<OrderEntity> findAllByBuyer(UserEntity buyer);
+
+    @Query("""
+        select o from OrderEntity o
+        join fetch o.bidding b
+        join fetch b.productSize ps
+        join fetch ps.product p
+        join fetch ps.size s
+        left join fetch o.orderStatus os
+        left join fetch o.seller seller
+        where o.buyer = :buyer
+    """)
+    List<OrderEntity> findAllByBuyer(@Param("buyer") UserEntity buyer);
 
     @Query("""
         select o from OrderEntity o
