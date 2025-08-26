@@ -11,11 +11,11 @@ import java.util.List;
 public interface WishlistRepository extends JpaRepository<WishlistEntity, Long> {
 
     @Query("""
-        select w from WishlistEntity w
-        join fetch w.productSize ps
-        join fetch ps.product p
-        join fetch ps.size s
+        select distinct w from WishlistEntity w
+        join fetch w.product p
+        left join fetch p.productImages imgs
         where w.user = :user
+        order by w.createdAt desc
     """)
     List<WishlistEntity> findAllByUser(@Param("user") UserEntity user);
 

@@ -11,16 +11,6 @@ import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
-    @Query("""
-        select o from OrderEntity o
-        join fetch o.bidding b
-        join fetch b.productSize ps
-        join fetch ps.product p
-        join fetch ps.size s
-        left join fetch o.orderStatus os
-        left join fetch o.seller seller
-        where o.buyer = :buyer
-    """)
     List<OrderEntity> findAllByBuyer(@Param("buyer") UserEntity buyer);
 
     @Query("""
@@ -35,6 +25,18 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
         """)
     Optional<OrderEntity> findDetailById(@Param("id") Long id);
 
+    @Query("""
+        select distinct o from OrderEntity o
+        join fetch o.bidding b
+        join fetch b.productSize ps
+        join fetch ps.product p
+        join fetch ps.size sz
+        left join fetch o.orderStatus os
+        left join fetch o.seller s
+        where o.buyer = :buyer
+        order by o.createdAt desc
+    """)
+    List<OrderEntity> findAllByBuyerWithDetail(@Param("buyer") UserEntity buyer);
 //    // 결제용 비즈니스 키 조회 (기존 로직 유지)
 //    Optional<OrderEntity> findByOrderId(String orderId);
 }
