@@ -6,7 +6,10 @@ import com.example.shop.entity.OrderStatusEntity;
 import com.example.shop.repository.OrderRepository;
 import com.example.shop.repository.OrderStatusRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 
@@ -16,6 +19,13 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderStatusRepository orderStatusRepository;
+
+    // 주문 상세 조회
+    @Transactional(readOnly = true)
+    public OrderEntity getOrderDetail(Long id) {
+        return orderRepository.findDetailById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+    }
 
     public OrderEntity createOrder(BiddingEntity matchedBidding, BiddingEntity newBidding) {
         OrderStatusEntity pendingStatus = orderStatusRepository.findByOrderStatus("PAYMENT_PENDING")
