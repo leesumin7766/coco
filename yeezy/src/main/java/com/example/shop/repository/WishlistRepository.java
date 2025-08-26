@@ -12,7 +12,6 @@ public interface WishlistRepository extends JpaRepository<WishlistEntity, Long> 
 
     @Query("""
         select w from WishlistEntity w
-        join fetch w.productSize ps
         join fetch ps.product p
         join fetch ps.size s
         where w.user = :user
