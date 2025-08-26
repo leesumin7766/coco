@@ -17,6 +17,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
         join fetch o.bidding b
         join fetch b.productSize ps
         join fetch ps.product p
+        JOIN FETCH ps.size s
         left join fetch o.orderStatus os
         left join fetch o.seller s
         where o.id = :id
