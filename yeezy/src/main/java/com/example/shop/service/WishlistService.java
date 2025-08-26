@@ -36,7 +36,9 @@ public class WishlistService {
         wishlist.setSize(requestDto.getSize());
         wishlistRepository.save(wishlist);
     }
-
+    /*
+        08.26 Lazy 해결관련 수정
+     */
     public List<WishlistResponseDto> getWishlist(Long userId) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
