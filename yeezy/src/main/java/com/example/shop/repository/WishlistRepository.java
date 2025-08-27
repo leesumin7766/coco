@@ -10,13 +10,13 @@ import java.util.List;
 
 public interface WishlistRepository extends JpaRepository<WishlistEntity, Long> {
 
+    // WishlistEntity에는 product 연관과 size(String)만 있음. product만 fetch하면 충분.
     @Query("""
-        select distinct w from WishlistEntity w
+        select w from WishlistEntity w
         join fetch w.product p
-        left join fetch p.productImages imgs
         where w.user = :user
         order by w.createdAt desc
-    """)
+        """)
     List<WishlistEntity> findAllByUser(@Param("user") UserEntity user);
 
 }
