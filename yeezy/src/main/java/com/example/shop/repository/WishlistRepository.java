@@ -15,7 +15,6 @@ public interface WishlistRepository extends JpaRepository<WishlistEntity, Long> 
         select w from WishlistEntity w
         join fetch w.product p
         where w.user = :user
-        order by w.createdAt desc
         """)
     List<WishlistEntity> findAllByUser(@Param("user") UserEntity user);
 
