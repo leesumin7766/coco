@@ -1,7 +1,7 @@
 # coco
 07-14 user/coco 내의 폴더 사용할 것. 이 repo 사용할 것
 
-> Spring Boot 3.5.3 / Java 21 / MariaDB / Redis / React 19 / OAuth2 기반  
+> Spring Boot 3.5.3 / Java 21 / MariaDB / Redis / React 19
 > 대량 API 요청 대응, 동시성 제어, JPA 최적화, 캐시 전략을 중심으로 한 실습 프로젝트
 
 ---
