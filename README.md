@@ -3,6 +3,17 @@
 
 > Spring Boot 3.5.3 / Java 21 / MariaDB / Redis / React 19
 > 대량 API 요청 대응, 동시성 제어, JPA 최적화, 캐시 전략을 중심으로 한 실습 프로젝트
+## 🔧 주요 기술 스택
+
+| 분류         | 사용 기술|
+|--------------|-----------|
+| Backend      | Spring Boot 3.5.3, JPA, Spring Security, OAuth2 |
+| DB / 캐시     | MariaDB, Redis, Redisson, Lua Script |
+| Concurrency  | `@Transactional`, Pessimistic/Optimistic Lock |
+| Async / TPS  | `@Async`, CompletableFuture, Actuator, Grafana |
+| Frontend     | React 19.1.0 |
+| Monitoring   | Spring Actuator, Prometheus, ELK, Grafana |
+| Tools        | DBeaver 25.1.2, Postman |
 
 ---
 
@@ -52,16 +63,3 @@
 - `@Cacheable`, `@CacheEvict`, `RedisTemplate`, TTL 적용
 - 캐시 무효화 전략 (LRU, TTL, 조건부 Eviction)
 - Redis Pub/Sub 및 Lua 스크립트 실험
-
-
-## 🔧 주요 기술 스택
-
-| 분류         | 사용 기술(예정) |
-|--------------|-----------|
-| Backend      | Spring Boot 3.5.3, JPA, Spring Security, OAuth2 |
-| DB / 캐시     | MariaDB, Redis, Redisson, Lua Script |
-| Concurrency  | `@Transactional`, Pessimistic/Optimistic Lock |
-| Async / TPS  | `@Async`, CompletableFuture, Actuator, Grafana |
-| Frontend     | React 19.1.0 |
-| Monitoring   | Spring Actuator, Prometheus, ELK, Grafana |
-| Tools        | DBeaver 25.1.2, Postman |
