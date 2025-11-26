@@ -14,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 public class UserDetailsImpl implements UserDetails {
 
-    // ✅ 수정 완료
+    // 수정 완료
     private UserEntity user;
 
     @Override

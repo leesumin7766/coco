@@ -36,7 +36,7 @@ public class AuthController {
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
             String token = jwtUtil.createToken(userDetails.getUsername());
 
-            // ✅ JWT 토큰 로그 출력
+            // JWT 토큰 로그 출력
             System.out.println("[login sucess] JWT Token: " + token);
 
             return ResponseEntity.ok(Map.of("token", token));

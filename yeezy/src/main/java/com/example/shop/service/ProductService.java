@@ -7,6 +7,8 @@ import com.example.shop.dto.ProductSearchResponseDto;
 import com.example.shop.entity.*;
 import com.example.shop.repository.*;
 import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.cache.annotation.Cacheable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -64,7 +66,7 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    // ✅ 마이페이지: fetch join + readOnly 트랜잭션
+    // 마이페이지: fetch join + readOnly 트랜잭션
     @Transactional(readOnly = true)
     public List<ProductResponseDto> getProductsByUserId(Long userId) {
         List<ProductEntity> products = productRepository.findAllByUserIdWithImages(userId);
@@ -73,7 +75,8 @@ public class ProductService {
                 .toList();
     }
 
-    // ✅ 상세: fetch join + readOnly 트랜잭션
+    // 상세: fetch join + readOnly 트랜잭션
+    @Cacheable(value = "productDetail", key = "#productId")
     @Transactional(readOnly = true)
     public ProductDetailResponseDto getProductDetail(Long productId) {
         ProductEntity product = productRepository.findDetailById(productId)

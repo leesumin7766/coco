@@ -72,13 +72,13 @@ public class MypageController {
                 .collect(Collectors.toList());
     }
 
-    // ✅ 추가: 내가 등록한 구매 입찰 조회
+    // 내가 등록한 구매 입찰 조회
     @GetMapping("/biddings/buys")
     public List<BiddingResponseDto> getMyBuys(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         return biddingService.getBuysByUser(userDetails.getUser());
     }
 
-    // ✅ 추가: 내가 등록한 판매 입찰 조회
+    // 내가 등록한 판매 입찰 조회
     @GetMapping("/biddings/sales")
     public List<BiddingResponseDto> getMySales(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         return biddingService.getSalesByUser(userDetails.getUser());

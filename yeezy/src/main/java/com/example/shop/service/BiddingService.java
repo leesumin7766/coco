@@ -61,7 +61,7 @@ public class BiddingService {
         newBidding.setCreatedAt(LocalDateTime.now());
         newBidding.setUpdatedAt(LocalDateTime.now());
 
-        // ✅ 즉시 거래 로직
+        // 즉시 거래 로직
         if (position.getPosition().equals("BUY")) {
             // 구매 입찰 → 가장 낮은 판매 입찰 찾기
             BiddingEntity matchedSell = biddingRepository

@@ -6,7 +6,7 @@ services:
     container_name: coco-db
     restart: always
     environment:
-      - MYSQL_ROOT_PASSWORD=terry8473
+      - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=yeezydb
     ports:
       - "3307:3306" # 로컬 3306, 호스트 3307
@@ -27,7 +27,7 @@ services:
       # 호스트 로컬에 띄운 MariaDB 연결 (application.yml 대신 덮어쓰기)
       - SPRING_DATASOURCE_URL=jdbc:mariadb://db:3306/yeezydb
       - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=terry8473
+      - SPRING_DATASOURCE_PASSWORD=root
       - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.mariadb.jdbc.Driver
       # JPA 설정
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
@@ -35,8 +35,8 @@ services:
       - SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL=true
 
       # Redis는 compose 네트워크 내 redis 컨테이너를 가리킵니다
-      - SPRING_REDIS_HOST=redis
-      - SPRING_REDIS_PORT=6379
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
 
       # JWT / Toss Secret
       - JWT_SECRET_KEY=ThisIsASecretKeyForJwtTokenGenerationExample123!
