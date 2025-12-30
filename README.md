@@ -8,11 +8,11 @@
 | 분류         | 사용 기술|
 |--------------|-----------|
 | Backend      | Spring Boot 3.5.3, JPA, Spring Security, OAuth2 |
-| DB / 캐시     | MariaDB, Redis, Redisson, Lua Script |
+| DB / 캐시     | MariaDB, Redis |
 | Concurrency  | `@Transactional`, Pessimistic/Optimistic Lock |
 | Async / TPS  | `@Async`, CompletableFuture, Actuator, Grafana |
 | Frontend     | React 19.1.0 |
-| Monitoring   | Spring Actuator, Prometheus, ELK, Grafana |
+| Monitoring   | Spring Actuator, Prometheus, Grafana |
 | Tools        | DBeaver 25.1.2, Postman |
 
 ---
