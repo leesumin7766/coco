@@ -42,6 +42,12 @@ services:
       - JWT_SECRET_KEY=ThisIsASecretKeyForJwtTokenGenerationExample123!
       - TOSS_SECRET_KEY=test_sk_6bJXmgo28eBORxQmb2a63LAnGKWx
 
+      # ACTUATOR + PROMETHEUS FIX
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=*
+      - MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED=true
+      - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
+      - MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED=true
+
     depends_on:
       - db
       - redis
@@ -55,6 +61,41 @@ services:
       - "80:80"
     depends_on:
       - backend
+
+  # redis-exporter
+  redis-exporter:
+    image: oliver006/redis_exporter
+    container_name: coco-redis-exporter
+    restart: always
+    ports:
+      - "9121:9121"
+    command: [ "--redis.addr=redis://redis:6379" ]
+    depends_on:
+      - redis
+  # prometheus
+  prometheus:
+    image: prom/prometheus
+    container_name: coco-prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - backend
+      - redis-exporter
+
+  # Grafana
+  grafana:
+    image: grafana/grafana
+    container_name: coco-grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
 
   redis:
     image: redis:7-alpine

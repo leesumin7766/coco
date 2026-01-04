@@ -28,6 +28,17 @@ spring:
     prefix: classpath:/templates/
     suffix: .html
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+
 jwt:
   secret-key: ThisIsASecretKeyForJwtTokenGenerationExample123!
 

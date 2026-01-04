@@ -28,6 +28,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             "/", "/login", "/signup",
             "/api/auth/**",
             "/api/brands/**",
+            "/actuator/**",
             "/css/**", "/js/**", "/images/**"
     };
 
