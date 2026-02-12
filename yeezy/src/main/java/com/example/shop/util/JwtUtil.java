@@ -20,7 +20,7 @@ public class JwtUtil {
 
     private Key key;
 
-    private final long tokenValidityInMilliseconds = 1000 * 60 * 60; // 1시간
+    private final long tokenValidityInMilliseconds = 1000 * 10; // 1시간
 
     @PostConstruct
     public void init() {
