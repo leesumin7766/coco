@@ -8,12 +8,7 @@ spring:
       enabled: false
   profiles:
     active: dev # 로컬 기본: dev. 배포에선 SPRING_PROFILES_ACTIVE=prod 로 지정
-  cache:
-    type: redis
-  data:
-    redis:
-      host: host.docker.internal
-      port: 6379
+
 
   jpa:
     open-in-view: false
@@ -43,7 +38,7 @@ jwt:
   secret-key: ThisIsASecretKeyForJwtTokenGenerationExample123!
 
 toss:
-  secret-key: test_sk_6bJXmgo28eBORxQmb2a63LAnGKWx
+  secret-key: ${TOSS_SECRET_KEY}
 
 logging:
   level:
@@ -58,7 +53,7 @@ security:
       registration:
         naver:
           client-id: 네이버_앱_클라이언트_ID
-          client-secret: 네이버_앱_클라이언트_시크릿
+          client-secret: ${NAVER_CLIENT_SECRET}
           client-name: Naver
           authorization-grant-type: authorization_code
           redirect-uri: "{baseUrl}/login/oauth2/code/naver"
@@ -80,11 +75,17 @@ spring:
   config:
     activate:
       on-profile: dev
+  cache:
+    type: redis
+    data:
+      redis:
+        host: localhost
+        port: 6379
 
   datasource:
     url: jdbc:mariadb://localhost:3307/yeezydb
     username: root
-    password: root
+    password: ${DB_PASSWORD}
     driver-class-name: org.mariadb.jdbc.Driver
     hikari:
       maximum-pool-size: 50
@@ -111,8 +112,15 @@ spring:
     activate:
       on-profile: prod
 
+  cache:
+    type: redis
+    data:
+      redis:
+        host: redis
+        port: 6379
+
   datasource:
-    url: jdbc:mariadb://db:3307/yeezydb
+    url: jdbc:mariadb://db:3306/yeezydb
     username: root
     password: root
     driver-class-name: org.mariadb.jdbc.Driver
