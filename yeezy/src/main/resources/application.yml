@@ -19,7 +19,7 @@ spring:
     open-in-view: false
     show-sql: true
     hibernate:
-      ddl-auto: update    # 테이블은 JPA가 생성/갱신
+      ddl-auto: update            # 테이블은 JPA가 생성/갱신
     properties:
       hibernate:
         format_sql: true
@@ -49,8 +49,8 @@ logging:
   level:
     root: INFO
     org.springframework: DEBUG
-    org.springframework.security: DEBUG
-    com.example.shop: DEBUG
+    org.springframework.security: DEBUG   # <- 보안 관련 디버깅 로그
+    com.example.shop: DEBUG               # <- 내 애플리케이션 로그
 
 security:
   oauth2:
@@ -100,7 +100,7 @@ spring:
       data-locations: classpath:/data.sql
 
   jpa:
-    defer-datasource-initialization: true
+    defer-datasource-initialization: false
 
 # ========================================
 # prod profile
@@ -112,14 +112,15 @@ spring:
       on-profile: prod
 
   datasource:
-    url: jdbc:mariadb://db:3306/yeezydb
+    url: jdbc:mariadb://db:3307/yeezydb
     username: root
     password: root
     driver-class-name: org.mariadb.jdbc.Driver
 
+  # data.sql 실행
   sql:
     init:
       mode: never
-
+      data-locations: classpath:/data.sql
   jpa:
     defer-datasource-initialization: true
