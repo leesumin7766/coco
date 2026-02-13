@@ -61,7 +61,7 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    url: jdbc:mariadb://localhost:3306/yeezydb
+    url: jdbc:mariadb://localhost:3307/yeezydb
     username: root
     password: terry8473
     driver-class-name: org.mariadb.jdbc.Driver
@@ -69,10 +69,10 @@ spring:
   # data.sql 실행
   sql:
     init:
-      mode: always
+      mode: never
       data-locations: classpath:/data.sql
   jpa:
-    defer-datasource-initialization: true
+    defer-datasource-initialization: false
 
 ---
 spring:
@@ -80,7 +80,7 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    url: jdbc:mariadb://db:3306/yeezydb
+    url: jdbc:mariadb://db:3307/yeezydb
     username: root
     password: terry8473
     driver-class-name: org.mariadb.jdbc.Driver
