@@ -47,6 +47,24 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, String>> logout(
+            @RequestHeader(value = "Authorization", required = false) String authorization
+    ) {
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Authorization header missing"));
+        }
+
+        String token = authorization.substring(7);
+        System.out.println("[logout] called, token prefix=" + token.substring(0, 15));
+        // 블랙리스트 등록 (Redis TTL은 exp까지 남은 시간으로)
+        jwtUtil.blacklistToken(token);
+        System.out.println("[logout] blacklistToken done");
+
+        return ResponseEntity.ok(Map.of("message", "logout success"));
+    }
+
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody SignupRequestDto signupRequestDto) {
         try {
