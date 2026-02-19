@@ -26,7 +26,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     private static final String[] EXCLUDE_PATTERNS = {
             "/", "/login", "/signup",
-            "/api/auth/**",
+            "/api/auth/login",
+            "/api/auth/signup",
             "/api/brands/**",
             "/css/**", "/js/**", "/images/**"
     };
@@ -52,19 +53,31 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         String token = resolveToken(request);
         System.out.println("[JwtTokenFilter] Extracted token: " + token);
 
-        if (token != null && jwtUtil.validateToken(token)) {
-            String email = jwtUtil.getEmailFromToken(token);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+        if (token != null) {
 
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
+            // 블랙리스트면 바로 차단 (로그아웃 토큰)
+            if (jwtUtil.isBlacklisted(token)) {
+                System.out.println("[JwtTokenFilter] 블랙리스트 토큰 차단");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"message\":\"Logged out token\"}");
+                return; //여기서 종료
+            }
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            // 인증 로그
-            System.out.println("[JwtTokenFilter] 인증 완료: " + userDetails.getUsername());
+            // 서명/만료 검증
+            if (jwtUtil.validateToken(token)) {
+                String email = jwtUtil.getEmailFromToken(token);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
+
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                System.out.println("[JwtTokenFilter] 인증 완료: " + userDetails.getUsername());
+            }
         }
+
         filterChain.doFilter(request, response);
     }
     private String resolveToken(HttpServletRequest request) {

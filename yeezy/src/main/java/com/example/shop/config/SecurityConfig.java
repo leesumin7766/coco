@@ -42,12 +42,14 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/brands/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/products/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/signup").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/logout").authenticated()
                         .requestMatchers(
                                 "/",
                                 "/cart/**",          // 장바구니 기능 (필요하면 인증 없이도 허용)
                                 "/login",
                                 "/signup",
-                                "/api/auth/**",
                                 "/api/payments/confirm",
                                 "/css/**",
                                 "/js/**",
