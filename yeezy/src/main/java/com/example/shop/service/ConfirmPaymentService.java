@@ -5,11 +5,11 @@ import com.example.shop.dto.ConfirmPaymentRequestDto;
 import com.example.shop.dto.TossResponseDto;
 import com.example.shop.entity.OrderEntity;
 import com.example.shop.entity.OrderStatusEntity;
-import com.example.shop.entity.UserEntity;
 import com.example.shop.repository.OrderRepository;
 import com.example.shop.repository.OrderStatusRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -21,7 +21,8 @@ public class ConfirmPaymentService {
     private final OrderRepository orderRepository;
     private final OrderStatusRepository orderStatusRepository;
 
-    public void confirmPayment(ConfirmPaymentRequestDto request, UserEntity user) {
+    @Transactional
+    public void confirmPayment(ConfirmPaymentRequestDto request) {
         // 1. Toss 서버에 결제 승인 요청
         TossResponseDto tossRes = tossClient.confirmPayment(request);
 

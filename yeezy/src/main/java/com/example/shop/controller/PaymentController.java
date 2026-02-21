@@ -4,6 +4,7 @@ import com.example.shop.dto.ConfirmPaymentRequestDto;
 import com.example.shop.dto.PaymentRequestDto;
 import com.example.shop.dto.PaymentResponseDto;
 import com.example.shop.security.UserDetailsImpl;
+import com.example.shop.service.ConfirmPaymentService;
 import com.example.shop.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PaymentController {
 
     private final PaymentService paymentService;
+    private final ConfirmPaymentService confirmPaymentService;
 
     @PostMapping("/prepare")
     public ResponseEntity<PaymentResponseDto> preparePayment(
@@ -31,8 +33,8 @@ public class PaymentController {
     }
 
     @PostMapping("/confirm")
-    public ResponseEntity<?> confirmPayment(@RequestBody ConfirmPaymentRequestDto dto) {
-        // 결제 확인 로직
-        return ResponseEntity.ok().build();
+    public ResponseEntity<String> confirmPayment(@RequestBody ConfirmPaymentRequestDto request) {
+        confirmPaymentService.confirmPayment(request);
+        return ResponseEntity.ok("결제 확인 완료");
     }
 }
