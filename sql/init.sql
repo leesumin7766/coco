@@ -342,3 +342,43 @@ INSERT IGNORE INTO batch_job_meta (
 ) VALUES
     ('metrics_hourly_aggregation', '매시 05분', 'INIT', 0, NOW(), NOW()),
     ('metrics_daily_aggregation', '매일 00:10', 'INIT', 0, NOW(), NOW());
+
+-- 18) 스키마 강화 (감사/이벤트 신뢰성 + RDBMS 튜닝 인덱스)
+ALTER TABLE payment_events
+    ADD COLUMN IF NOT EXISTS idempotency_key VARCHAR(100) NOT NULL DEFAULT '',
+    ADD COLUMN IF NOT EXISTS prev_status VARCHAR(50) NULL,
+    ADD COLUMN IF NOT EXISTS new_status VARCHAR(50) NULL,
+    ADD COLUMN IF NOT EXISTS event_version INT NOT NULL DEFAULT 1,
+    ADD COLUMN IF NOT EXISTS source_service VARCHAR(60) NOT NULL DEFAULT 'backend',
+    ADD COLUMN IF NOT EXISTS actor_user_id BIGINT NULL,
+    ADD COLUMN IF NOT EXISTS updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+
+ALTER TABLE trade_events
+    ADD COLUMN IF NOT EXISTS idempotency_key VARCHAR(100) NOT NULL DEFAULT '',
+    ADD COLUMN IF NOT EXISTS prev_status VARCHAR(50) NULL,
+    ADD COLUMN IF NOT EXISTS new_status VARCHAR(50) NULL,
+    ADD COLUMN IF NOT EXISTS event_version INT NOT NULL DEFAULT 1,
+    ADD COLUMN IF NOT EXISTS source_service VARCHAR(60) NOT NULL DEFAULT 'backend',
+    ADD COLUMN IF NOT EXISTS actor_user_id BIGINT NULL,
+    ADD COLUMN IF NOT EXISTS updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+
+ALTER TABLE audit_logs
+    ADD COLUMN IF NOT EXISTS idempotency_key VARCHAR(100) NULL,
+    ADD COLUMN IF NOT EXISTS source_service VARCHAR(60) NOT NULL DEFAULT 'backend',
+    ADD COLUMN IF NOT EXISTS event_version INT NOT NULL DEFAULT 1,
+    ADD COLUMN IF NOT EXISTS updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+
+CREATE INDEX IF NOT EXISTS idx_request_logs_trace_created_at ON request_logs (trace_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_target_created_at ON audit_logs (target_type, target_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_payment_events_trace_created_at ON payment_events (trace_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_trade_events_trace_created_at ON trade_events (trace_id, created_at);
+
+CREATE UNIQUE INDEX IF NOT EXISTS uk_payment_events_idempotency ON payment_events (order_id, event_type, idempotency_key);
+CREATE UNIQUE INDEX IF NOT EXISTS uk_trade_events_idempotency ON trade_events (event_type, idempotency_key);
+
+CREATE INDEX IF NOT EXISTS idx_biddings_match ON biddings (product_size_id, bidding_position_id, status_id, price, id);
+CREATE INDEX IF NOT EXISTS idx_biddings_user_status_created_at ON biddings (user_id, status_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_orders_buyer_created_at ON orders (buyer_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_orders_seller_created_at ON orders (seller_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_orders_status_created_at ON orders (order_status_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_product_sizes_product_size ON product_sizes (product_id, size_id);
