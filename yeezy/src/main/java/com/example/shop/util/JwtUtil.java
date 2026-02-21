@@ -4,6 +4,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtUtil {
 
     @Value("${jwt.secret-key}")
@@ -28,6 +30,9 @@ public class JwtUtil {
 
     private final long tokenValidityInMilliseconds = 1000 * 60 * 30; // 1시간
 
+    @Value("${redis.resilience.jwt-blacklist-fail-closed:true}")
+    private boolean jwtBlacklistFailClosed;
+
     @PostConstruct
     public void init() {
         byte[] keyBytes = Base64.getEncoder().encode(secretKey.getBytes());
@@ -37,26 +42,36 @@ public class JwtUtil {
     public void blacklistToken(String token) {
         Date expiration = getExpiration(token);
         long ttlMs = expiration.getTime() - System.currentTimeMillis();
-        System.out.println("[blacklistToken] ttlMs=" + ttlMs);
 
         if (ttlMs <= 0) {
-            System.out.println("[blacklistToken] skipped (expired)");
+            log.debug("skip blacklisting expired token");
             return;
         }
 
         String redisKey = BLACKLIST_PREFIX + token;
-
-        redisTemplate.opsForValue().set(redisKey, "logout", ttlMs, TimeUnit.MILLISECONDS);
-
-        Boolean exists = redisTemplate.hasKey(redisKey);
-        String val = redisTemplate.opsForValue().get(redisKey);
-        Long ttl = redisTemplate.getExpire(redisKey, TimeUnit.SECONDS);
-
-        System.out.println("[blacklistToken] saved? exists=" + exists + ", val=" + val + ", ttl(s)=" + ttl);
+        try {
+            redisTemplate.opsForValue().set(redisKey, "logout", ttlMs, TimeUnit.MILLISECONDS);
+            log.debug("token blacklisted. key={}, ttlMs={}", redisKey, ttlMs);
+        } catch (RuntimeException e) {
+            log.warn("failed to write JWT blacklist in Redis. key={}, reason={}", redisKey, e.getMessage());
+            throw new IllegalStateException("Redis blacklist write failed", e);
+        }
     }
 
     public boolean isBlacklisted(String token) {
-        return Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_PREFIX + token));
+        String redisKey = BLACKLIST_PREFIX + token;
+        try {
+            return Boolean.TRUE.equals(redisTemplate.hasKey(redisKey));
+        } catch (RuntimeException e) {
+            if (jwtBlacklistFailClosed) {
+                log.warn("Redis unavailable during blacklist check. fail-closed=true, key={}, reason={}",
+                        redisKey, e.getMessage());
+                return true;
+            }
+            log.warn("Redis unavailable during blacklist check. fail-closed=false, key={}, reason={}",
+                    redisKey, e.getMessage());
+            return false;
+        }
     }
 
     public String createToken(String email) {
