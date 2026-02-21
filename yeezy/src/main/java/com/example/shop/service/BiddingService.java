@@ -6,7 +6,9 @@ import com.example.shop.entity.*;
 import com.example.shop.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -28,6 +30,7 @@ public class BiddingService {
     private final OrderRepository orderRepository;
     private final OrderStatusRepository orderStatusRepository;
 
+    @Transactional
     public Map<String, Object> createBidding(BiddingRequestDto dto, UserEntity user) {
         boolean isMatched = false;
         Long createdOrderId = null;
@@ -65,8 +68,9 @@ public class BiddingService {
         if (position.getPosition().equals("BUY")) {
             // 구매 입찰 → 가장 낮은 판매 입찰 찾기
             BiddingEntity matchedSell = biddingRepository
-                    .findTopByProductSizeAndPosition_PositionAndStatusOrderByPriceAsc(
-                            productSize, "SELL", pendingStatus)
+                    .findMatchCandidatesForUpdateAsc(productSize, "SELL", pendingStatus, PageRequest.of(0, 1))
+                    .stream()
+                    .findFirst()
                     .filter(sell -> dto.getPrice() >= sell.getPrice())
                     .orElse(null);
 
@@ -96,8 +100,9 @@ public class BiddingService {
         } else if (position.getPosition().equals("SELL")) {
             // 판매 입찰 → 가장 높은 구매 입찰 찾기
             BiddingEntity matchedBuy = biddingRepository
-                    .findTopByProductSizeAndPosition_PositionAndStatusOrderByPriceDesc(
-                            productSize, "BUY", pendingStatus)
+                    .findMatchCandidatesForUpdateDesc(productSize, "BUY", pendingStatus, PageRequest.of(0, 1))
+                    .stream()
+                    .findFirst()
                     .filter(buy -> dto.getPrice() <= buy.getPrice())
                     .orElse(null);
 
