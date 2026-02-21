@@ -5,7 +5,12 @@ import com.example.shop.entity.UserEntity;
 import com.example.shop.entity.ProductSizeEntity;
 import com.example.shop.entity.BiddingPositionEntity;
 import com.example.shop.entity.StatusEntity;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 import java.util.List;
@@ -34,5 +39,37 @@ public interface BiddingRepository extends JpaRepository<BiddingEntity, Long> {
             ProductSizeEntity productSize,
             String position,
             StatusEntity status
+    );
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            SELECT b
+            FROM BiddingEntity b
+            WHERE b.productSize = :productSize
+              AND b.position.position = :position
+              AND b.status = :status
+            ORDER BY b.price ASC, b.id ASC
+            """)
+    List<BiddingEntity> findMatchCandidatesForUpdateAsc(
+            @Param("productSize") ProductSizeEntity productSize,
+            @Param("position") String position,
+            @Param("status") StatusEntity status,
+            Pageable pageable
+    );
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            SELECT b
+            FROM BiddingEntity b
+            WHERE b.productSize = :productSize
+              AND b.position.position = :position
+              AND b.status = :status
+            ORDER BY b.price DESC, b.id ASC
+            """)
+    List<BiddingEntity> findMatchCandidatesForUpdateDesc(
+            @Param("productSize") ProductSizeEntity productSize,
+            @Param("position") String position,
+            @Param("status") StatusEntity status,
+            Pageable pageable
     );
 }
