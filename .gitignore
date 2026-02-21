@@ -1,2 +1,6 @@
 /.env
 /yeezy/.env
+
+# IDE
+.idea/
+*.iml
