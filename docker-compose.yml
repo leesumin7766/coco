@@ -81,13 +81,16 @@ services:
       - redis
 
   mariadb-exporter:
-    image: prom/mysqld-exporter
+    image: prom/mysqld-exporter:v0.18.0
     container_name: coco-mariadb-exporter
     restart: always
     ports:
       - "9104:9104"
+    command:
+      - --mysqld.address=db:3306
+      - --mysqld.username=root
     environment:
-      - DATA_SOURCE_NAME=root:root@(db:3306)/
+      - MYSQLD_EXPORTER_PASSWORD=root
     depends_on:
       - db
   # prometheus
