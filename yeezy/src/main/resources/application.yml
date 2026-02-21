@@ -22,6 +22,8 @@ spring:
     redis:
       host: ${SPRING_REDIS_HOST:localhost}
       port: ${SPRING_REDIS_PORT:6379}
+      connect-timeout: ${SPRING_DATA_REDIS_CONNECT_TIMEOUT:1s}
+      timeout: ${SPRING_DATA_REDIS_TIMEOUT:700ms}
 
   thymeleaf:
     prefix: classpath:/templates/
@@ -51,6 +53,14 @@ logging:
     org.springframework.security: DEBUG   # <- 보안 관련 디버깅 로그
     com.example.shop: DEBUG               # <- 내 애플리케이션 로그
 
+redis:
+  resilience:
+    cache:
+      failure-threshold: ${REDIS_CACHE_FAILURE_THRESHOLD:3}
+      open-duration-ms: ${REDIS_CACHE_OPEN_DURATION_MS:30000}
+      probe-interval-ms: ${REDIS_CACHE_PROBE_INTERVAL_MS:5000}
+    jwt-blacklist-fail-closed: ${REDIS_JWT_BLACKLIST_FAIL_CLOSED:true}
+
 security:
   oauth2:
     client:
@@ -79,6 +89,10 @@ spring:
   config:
     activate:
       on-profile: dev
+  data:
+    redis:
+      connect-timeout: ${SPRING_DATA_REDIS_CONNECT_TIMEOUT_DEV:1s}
+      timeout: ${SPRING_DATA_REDIS_TIMEOUT_DEV:700ms}
   cache:
     type: redis
     data:
@@ -115,6 +129,10 @@ spring:
   config:
     activate:
       on-profile: prod
+  data:
+    redis:
+      connect-timeout: ${SPRING_DATA_REDIS_CONNECT_TIMEOUT_PROD:1s}
+      timeout: ${SPRING_DATA_REDIS_TIMEOUT_PROD:500ms}
 
   cache:
     type: redis

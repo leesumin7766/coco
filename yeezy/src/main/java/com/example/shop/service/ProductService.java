@@ -76,7 +76,12 @@ public class ProductService {
     }
 
     // 상세: fetch join + readOnly 트랜잭션
-    @Cacheable(value = "productDetail", key = "#productId")
+    @Cacheable(
+            value = "productDetail",
+            key = "#productId",
+            condition = "@redisCacheBypassGate.allowCache('productDetail')",
+            sync = true
+    )
     @Transactional(readOnly = true)
     public ProductDetailResponseDto getProductDetail(Long productId) {
         ProductEntity product = productRepository.findDetailById(productId)
