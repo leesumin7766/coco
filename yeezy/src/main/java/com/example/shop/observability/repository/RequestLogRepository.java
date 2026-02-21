@@ -1,0 +1,7 @@
+package com.example.shop.observability.repository;
+
+import com.example.shop.observability.entity.RequestLogEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface RequestLogRepository extends JpaRepository<RequestLogEntity, Long> {
+}

@@ -3,6 +3,7 @@ package com.example.shop.service;
 import com.example.shop.dto.BiddingRequestDto;
 import com.example.shop.dto.BiddingResponseDto;
 import com.example.shop.entity.*;
+import com.example.shop.observability.service.ObservabilityService;
 import com.example.shop.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -29,6 +30,7 @@ public class BiddingService {
     private final SizeRepository sizeRepository;
     private final OrderRepository orderRepository;
     private final OrderStatusRepository orderStatusRepository;
+    private final ObservabilityService observabilityService;
 
     @Transactional
     public Map<String, Object> createBidding(BiddingRequestDto dto, UserEntity user) {
@@ -92,9 +94,41 @@ public class BiddingService {
                 order.setBidding(newBidding);
                 OrderEntity savedOrder = orderRepository.save(order);
                 createdOrderId = savedOrder.getId();
+
+                observabilityService.saveTradeEvent(
+                        savedOrder.getId(),
+                        newBidding.getId(),
+                        matchedSell.getId(),
+                        productSize.getId(),
+                        matchedSell.getPrice(),
+                        "BIDDING_MATCHED",
+                        "MATCHED",
+                        Map.of(
+                                "position", "BUY",
+                                "requestedPrice", dto.getPrice(),
+                                "matchedPrice", matchedSell.getPrice()
+                        )
+                );
+
+                observabilityService.saveAuditLog(
+                        user.getId(),
+                        "BIDDING_MATCHED",
+                        "BIDDING",
+                        String.valueOf(newBidding.getId()),
+                        Map.of("status", "PENDING"),
+                        Map.of("status", "MATCHED", "orderId", savedOrder.getId())
+                );
             } else {
                 newBidding.setStatus(pendingStatus);
-                biddingRepository.save(newBidding);
+                BiddingEntity saved = biddingRepository.save(newBidding);
+                observabilityService.saveAuditLog(
+                        user.getId(),
+                        "BIDDING_CREATED",
+                        "BIDDING",
+                        String.valueOf(saved.getId()),
+                        null,
+                        Map.of("status", "PENDING", "position", position.getPosition(), "price", saved.getPrice())
+                );
             }
 
         } else if (position.getPosition().equals("SELL")) {
@@ -124,9 +158,41 @@ public class BiddingService {
                 order.setBidding(newBidding);
                 OrderEntity savedOrder = orderRepository.save(order);
                 createdOrderId = savedOrder.getId();
+
+                observabilityService.saveTradeEvent(
+                        savedOrder.getId(),
+                        matchedBuy.getId(),
+                        newBidding.getId(),
+                        productSize.getId(),
+                        matchedBuy.getPrice(),
+                        "BIDDING_MATCHED",
+                        "MATCHED",
+                        Map.of(
+                                "position", "SELL",
+                                "requestedPrice", dto.getPrice(),
+                                "matchedPrice", matchedBuy.getPrice()
+                        )
+                );
+
+                observabilityService.saveAuditLog(
+                        user.getId(),
+                        "BIDDING_MATCHED",
+                        "BIDDING",
+                        String.valueOf(newBidding.getId()),
+                        Map.of("status", "PENDING"),
+                        Map.of("status", "MATCHED", "orderId", savedOrder.getId())
+                );
             } else {
                 newBidding.setStatus(pendingStatus);
-                biddingRepository.save(newBidding);
+                BiddingEntity saved = biddingRepository.save(newBidding);
+                observabilityService.saveAuditLog(
+                        user.getId(),
+                        "BIDDING_CREATED",
+                        "BIDDING",
+                        String.valueOf(saved.getId()),
+                        null,
+                        Map.of("status", "PENDING", "position", position.getPosition(), "price", saved.getPrice())
+                );
             }
         }
 
@@ -178,6 +244,15 @@ public class BiddingService {
         bidding.setStatus(cancelledStatus);
         bidding.setUpdatedAt(LocalDateTime.now());
         biddingRepository.save(bidding);
+
+        observabilityService.saveAuditLog(
+                user.getId(),
+                "BIDDING_CANCELLED",
+                "BIDDING",
+                String.valueOf(bidding.getId()),
+                Map.of("status", "PENDING"),
+                Map.of("status", "CANCELLED")
+        );
     }
 
     public Map<String, Integer> getBiddingSummary(Long productId, String sizeName) {

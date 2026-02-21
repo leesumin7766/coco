@@ -5,14 +5,21 @@ services:
     image: mariadb:10.6
     container_name: coco-db
     restart: always
+    command:
+      - --init-file=/docker-entrypoint-initdb.d/reapply-init.sql
+      - --slow_query_log=1
+      - --long_query_time=0.3
+      - --log_output=TABLE
+      - --performance_schema=ON
     environment:
-      - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_DATABASE=yeezydb
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-yeezydb}
     ports:
       - "3307:3306" # 로컬 3306, 호스트 3307
     volumes:
       - db_data:/var/lib/mysql
       - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./sql/reapply-init.sql:/docker-entrypoint-initdb.d/reapply-init.sql:ro
 
   backend:
     image: docker.io/sumin19987766/coco-backend:latest
@@ -25,9 +32,9 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       # 호스트 로컬에 띄운 MariaDB 연결 (application.yml 대신 덮어쓰기)
-      - SPRING_DATASOURCE_URL=jdbc:mariadb://db:3306/yeezydb
+      - SPRING_DATASOURCE_URL=jdbc:mariadb://db:3306/${MYSQL_DATABASE:-yeezydb}
       - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.mariadb.jdbc.Driver
       # JPA 설정
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
@@ -35,12 +42,13 @@ services:
       - SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL=true
 
       # Redis는 compose 네트워크 내 redis 컨테이너를 가리킵니다
-      - SPRING_DATA_REDIS_HOST=redis
-      - SPRING_DATA_REDIS_PORT=6379
+      - SPRING_DATA_REDIS_HOST=${SPRING_REDIS_HOST}
+      - SPRING_DATA_REDIS_PORT=${SPRING_REDIS_PORT}
 
       # JWT / Toss Secret
-      - JWT_SECRET_KEY=ThisIsASecretKeyForJwtTokenGenerationExample123!
-      - TOSS_SECRET_KEY=test_sk_6bJXmgo28eBORxQmb2a63LAnGKWx
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - TOSS_SECRET_KEY=${TOSS_SECRET_KEY}
+      - NAVER_CLIENT_SECRET=${NAVER_CLIENT_SECRET}
 
       # ACTUATOR + PROMETHEUS FIX
       - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=*
@@ -69,9 +77,23 @@ services:
     restart: always
     ports:
       - "9121:9121"
-    command: [ "--redis.addr=redis://redis:6379" ]
+    command: [ "--redis.addr=redis://${SPRING_REDIS_HOST}:${SPRING_REDIS_PORT}" ]
     depends_on:
       - redis
+
+  mariadb-exporter:
+    image: prom/mysqld-exporter:v0.18.0
+    container_name: coco-mariadb-exporter
+    restart: always
+    ports:
+      - "9104:9104"
+    command:
+      - --mysqld.address=db:3306
+      - --mysqld.username=root
+    environment:
+      - MYSQLD_EXPORTER_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - db
   # prometheus
   prometheus:
     image: prom/prometheus
@@ -84,6 +106,7 @@ services:
     depends_on:
       - backend
       - redis-exporter
+      - mariadb-exporter
 
   # Grafana
   grafana:
