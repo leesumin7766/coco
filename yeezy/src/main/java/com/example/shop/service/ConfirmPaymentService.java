@@ -5,6 +5,7 @@ import com.example.shop.dto.ConfirmPaymentRequestDto;
 import com.example.shop.dto.TossResponseDto;
 import com.example.shop.entity.OrderEntity;
 import com.example.shop.entity.OrderStatusEntity;
+import com.example.shop.observability.service.IdempotencyKeyGenerator;
 import com.example.shop.observability.service.ObservabilityService;
 import com.example.shop.repository.OrderRepository;
 import com.example.shop.repository.OrderStatusRepository;
@@ -24,32 +25,30 @@ public class ConfirmPaymentService {
     private final OrderRepository orderRepository;
     private final OrderStatusRepository orderStatusRepository;
     private final ObservabilityService observabilityService;
+    private final IdempotencyKeyGenerator idempotencyKeyGenerator;
 
-    @Transactional
+    @Transactional(timeout = 5)
     public void confirmPayment(ConfirmPaymentRequestDto request) {
-        // 1. Toss 서버에 결제 승인 요청
         TossResponseDto tossRes = tossClient.confirmPayment(request);
 
-        // 2. 주문 조회
         String[] parts = request.getOrderId().split("_");
         Long orderId = Long.valueOf(parts[2]);
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
-        // 3. 결제 금액 검증
         if (!order.getPrice().equals(request.getAmount())) {
             throw new IllegalArgumentException("결제 금액이 일치하지 않습니다.");
         }
 
-        // 4. 주문 상태 COMPLETED로 변경
         String previousStatus = order.getOrderStatus().getOrderStatus();
         OrderStatusEntity completedStatus = orderStatusRepository.findByOrderStatus("COMPLETED")
                 .orElseThrow(() -> new IllegalStateException("COMPLETED 상태가 없습니다."));
         order.setOrderStatus(completedStatus);
 
-        // 5. 결제 승인 시간 저장
         order.setUpdatedAt(LocalDateTime.now());
         orderRepository.save(order);
+
+        String paymentIdempotencyKey = idempotencyKeyGenerator.forPayment(order.getId(), request.getPaymentKey());
 
         Map<String, Object> paymentPayload = new HashMap<>();
         paymentPayload.put("orderId", request.getOrderId());
@@ -60,7 +59,11 @@ public class ConfirmPaymentService {
                 request.getPaymentKey(),
                 "PAYMENT_CONFIRM",
                 "CONFIRMED",
+                previousStatus,
+                completedStatus.getOrderStatus(),
                 request.getAmount(),
+                order.getBuyer() != null ? order.getBuyer().getId() : null,
+                paymentIdempotencyKey,
                 paymentPayload
         );
 
@@ -70,7 +73,8 @@ public class ConfirmPaymentService {
                 "ORDER",
                 String.valueOf(order.getId()),
                 Map.of("orderStatus", previousStatus),
-                Map.of("orderStatus", completedStatus.getOrderStatus())
+                Map.of("orderStatus", completedStatus.getOrderStatus()),
+                idempotencyKeyGenerator.forAudit("PAYMENT_CONFIRMED", "ORDER", String.valueOf(order.getId()))
         );
     }
 }
