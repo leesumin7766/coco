@@ -5,6 +5,11 @@ services:
     image: mariadb:10.6
     container_name: coco-db
     restart: always
+    command:
+      - --slow_query_log=1
+      - --long_query_time=0.3
+      - --log_output=TABLE
+      - --performance_schema=ON
     environment:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=yeezydb
@@ -72,6 +77,17 @@ services:
     command: [ "--redis.addr=redis://redis:6379" ]
     depends_on:
       - redis
+
+  mariadb-exporter:
+    image: prom/mysqld-exporter
+    container_name: coco-mariadb-exporter
+    restart: always
+    ports:
+      - "9104:9104"
+    environment:
+      - DATA_SOURCE_NAME=root:root@(db:3306)/
+    depends_on:
+      - db
   # prometheus
   prometheus:
     image: prom/prometheus
@@ -84,6 +100,7 @@ services:
     depends_on:
       - backend
       - redis-exporter
+      - mariadb-exporter
 
   # Grafana
   grafana:
