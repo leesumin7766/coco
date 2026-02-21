@@ -22,10 +22,14 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ObservabilityService {
 
+    private static final String SOURCE_SERVICE = "backend";
+    private static final int EVENT_VERSION = 1;
+
     private final RequestLogRepository requestLogRepository;
     private final AuditLogRepository auditLogRepository;
     private final PaymentEventRepository paymentEventRepository;
     private final TradeEventRepository tradeEventRepository;
+    private final IdempotencyKeyGenerator idempotencyKeyGenerator;
     private final ObjectMapper objectMapper;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -53,7 +57,9 @@ public class ObservabilityService {
                              String targetType,
                              String targetId,
                              Object beforeState,
-                             Object afterState) {
+                             Object afterState,
+                             String idempotencyKey) {
+        LocalDateTime now = LocalDateTime.now();
         AuditLogEntity log = new AuditLogEntity();
         log.setActorUserId(actorUserId);
         log.setAction(action);
@@ -62,7 +68,11 @@ public class ObservabilityService {
         log.setBeforeState(toJson(beforeState));
         log.setAfterState(toJson(afterState));
         log.setTraceId(TraceContext.getTraceId());
-        log.setCreatedAt(LocalDateTime.now());
+        log.setIdempotencyKey(resolveAuditIdempotencyKey(action, targetType, targetId, idempotencyKey));
+        log.setSourceService(SOURCE_SERVICE);
+        log.setEventVersion(EVENT_VERSION);
+        log.setCreatedAt(now);
+        log.setUpdatedAt(now);
         auditLogRepository.save(log);
     }
 
@@ -70,18 +80,30 @@ public class ObservabilityService {
                                  String paymentKey,
                                  String eventType,
                                  String status,
+                                 String prevStatus,
+                                 String newStatus,
                                  Integer amount,
+                                 Long actorUserId,
+                                 String idempotencyKey,
                                  Map<String, Object> payload) {
+        LocalDateTime now = LocalDateTime.now();
         PaymentEventEntity event = new PaymentEventEntity();
         event.setOrderId(orderId);
         event.setPaymentKey(paymentKey);
         event.setEventType(eventType);
         event.setStatus(status);
+        event.setPrevStatus(prevStatus);
+        event.setNewStatus(newStatus);
         event.setAmount(amount);
         event.setProvider("TOSS");
         event.setTraceId(TraceContext.getTraceId());
+        event.setIdempotencyKey(resolvePaymentIdempotencyKey(orderId, paymentKey, idempotencyKey));
+        event.setEventVersion(EVENT_VERSION);
+        event.setSourceService(SOURCE_SERVICE);
+        event.setActorUserId(actorUserId);
         event.setPayload(toJson(payload));
-        event.setCreatedAt(LocalDateTime.now());
+        event.setCreatedAt(now);
+        event.setUpdatedAt(now);
         paymentEventRepository.save(event);
     }
 
@@ -92,7 +114,12 @@ public class ObservabilityService {
                                Integer price,
                                String eventType,
                                String status,
+                               String prevStatus,
+                               String newStatus,
+                               Long actorUserId,
+                               String idempotencyKey,
                                Map<String, Object> payload) {
+        LocalDateTime now = LocalDateTime.now();
         TradeEventEntity event = new TradeEventEntity();
         event.setOrderId(orderId);
         event.setBuyBiddingId(buyBiddingId);
@@ -101,10 +128,46 @@ public class ObservabilityService {
         event.setPrice(price);
         event.setEventType(eventType);
         event.setStatus(status);
+        event.setPrevStatus(prevStatus);
+        event.setNewStatus(newStatus);
         event.setTraceId(TraceContext.getTraceId());
+        event.setIdempotencyKey(resolveTradeIdempotencyKey(productSizeId, buyBiddingId, sellBiddingId, idempotencyKey));
+        event.setEventVersion(EVENT_VERSION);
+        event.setSourceService(SOURCE_SERVICE);
+        event.setActorUserId(actorUserId);
         event.setPayload(toJson(payload));
-        event.setCreatedAt(LocalDateTime.now());
+        event.setCreatedAt(now);
+        event.setUpdatedAt(now);
         tradeEventRepository.save(event);
+    }
+
+    private String resolveAuditIdempotencyKey(String action,
+                                              String targetType,
+                                              String targetId,
+                                              String explicitIdempotencyKey) {
+        if (explicitIdempotencyKey != null && !explicitIdempotencyKey.isBlank()) {
+            return explicitIdempotencyKey;
+        }
+        return idempotencyKeyGenerator.forAudit(action, targetType, targetId);
+    }
+
+    private String resolvePaymentIdempotencyKey(Long orderId,
+                                                String paymentKey,
+                                                String explicitIdempotencyKey) {
+        if (explicitIdempotencyKey != null && !explicitIdempotencyKey.isBlank()) {
+            return explicitIdempotencyKey;
+        }
+        return idempotencyKeyGenerator.forPayment(orderId, paymentKey);
+    }
+
+    private String resolveTradeIdempotencyKey(Long productSizeId,
+                                              Long buyBiddingId,
+                                              Long sellBiddingId,
+                                              String explicitIdempotencyKey) {
+        if (explicitIdempotencyKey != null && !explicitIdempotencyKey.isBlank()) {
+            return explicitIdempotencyKey;
+        }
+        return idempotencyKeyGenerator.forTrade(productSizeId, buyBiddingId, sellBiddingId);
     }
 
     private String toJson(Object payload) {

@@ -10,7 +10,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "audit_logs", indexes = {
         @Index(name = "idx_audit_logs_created_at", columnList = "created_at"),
-        @Index(name = "idx_audit_logs_actor_created_at", columnList = "actor_user_id,created_at")
+        @Index(name = "idx_audit_logs_actor_created_at", columnList = "actor_user_id,created_at"),
+        @Index(name = "idx_audit_logs_target_created_at", columnList = "target_type,target_id,created_at")
 })
 @Getter
 @Setter
@@ -44,6 +45,18 @@ public class AuditLogEntity {
     @Column(name = "trace_id", length = 64)
     private String traceId;
 
+    @Column(name = "idempotency_key", length = 100)
+    private String idempotencyKey;
+
+    @Column(name = "source_service", length = 60, nullable = false)
+    private String sourceService;
+
+    @Column(name = "event_version", nullable = false)
+    private Integer eventVersion;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
 }
