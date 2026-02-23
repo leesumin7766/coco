@@ -190,7 +190,7 @@ FLUSH PRIVILEGES;
 -- metrics_hourly 스냅샷 이벤트
 SET GLOBAL event_scheduler = ON;
 
-CREATE EVENT IF NOT EXISTS ev_metrics_hourly_table_size
+CREATE DEFINER='root'@'localhost' EVENT IF NOT EXISTS ev_metrics_hourly_table_size
 ON SCHEDULE EVERY 1 HOUR
 STARTS CURRENT_TIMESTAMP + INTERVAL 5 MINUTE
 DO
@@ -210,7 +210,7 @@ ON DUPLICATE KEY UPDATE
     metric_value = VALUES(metric_value),
     updated_at = VALUES(updated_at);
 
-CREATE EVENT IF NOT EXISTS ev_metrics_hourly_index_size
+CREATE DEFINER='root'@'localhost' EVENT IF NOT EXISTS ev_metrics_hourly_index_size
 ON SCHEDULE EVERY 1 HOUR
 STARTS CURRENT_TIMESTAMP + INTERVAL 6 MINUTE
 DO
@@ -230,7 +230,7 @@ ON DUPLICATE KEY UPDATE
     metric_value = VALUES(metric_value),
     updated_at = VALUES(updated_at);
 
-CREATE EVENT IF NOT EXISTS ev_metrics_hourly_binlog
+CREATE DEFINER='root'@'localhost' EVENT IF NOT EXISTS ev_metrics_hourly_binlog
 ON SCHEDULE EVERY 1 HOUR
 STARTS CURRENT_TIMESTAMP + INTERVAL 7 MINUTE
 DO
@@ -250,7 +250,7 @@ ON DUPLICATE KEY UPDATE
     metric_value = VALUES(metric_value),
     updated_at = VALUES(updated_at);
 
-CREATE EVENT IF NOT EXISTS ev_metrics_daily_rollup
+CREATE DEFINER='root'@'localhost' EVENT IF NOT EXISTS ev_metrics_daily_rollup
 ON SCHEDULE EVERY 1 DAY
 STARTS CURRENT_TIMESTAMP + INTERVAL 10 MINUTE
 DO
