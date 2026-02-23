@@ -1,0 +1,2 @@
+# Every day at 02:10
+10 2 * * * cd /Applications/isumin/coco && ./monitoring/sql-report/run-report.sh
