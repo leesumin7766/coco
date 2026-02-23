@@ -10,6 +10,9 @@ MYSQL_PORT="${MYSQL_PORT:-3307}"
 MYSQL_USER="${MYSQL_USER:-root}"
 MYSQL_PASSWORD="${MYSQL_PASSWORD:-root}"
 MYSQL_DB="${MYSQL_DB:-yeezydb}"
+MYSQL_EXTRA_OPTS="${MYSQL_EXTRA_OPTS:---skip-ssl}"
+
+read -r -a mysql_extra_opts <<< "${MYSQL_EXTRA_OPTS}"
 
 run_report() {
   local sql_file="$1"
@@ -21,6 +24,7 @@ run_report() {
     --user="${MYSQL_USER}" \
     --password="${MYSQL_PASSWORD}" \
     --database="${MYSQL_DB}" \
+    "${mysql_extra_opts[@]}" \
     --table < "${SCRIPT_DIR}/${sql_file}" > "${OUT_DIR}/${out_file}"
 }
 
