@@ -39,6 +39,7 @@ management:
       show-details: always
     prometheus:
       enabled: true
+      access: unrestricted
 
 jwt:
   secret-key: ThisIsASecretKeyForJwtTokenGenerationExample123!
