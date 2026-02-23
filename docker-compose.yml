@@ -5,12 +5,7 @@ services:
     image: mariadb:10.6
     container_name: coco-db
     restart: always
-    command:
-      - --init-file=/docker-entrypoint-initdb.d/reapply-init.sql
-      - --slow_query_log=1
-      - --long_query_time=0.3
-      - --log_output=TABLE
-      - --performance_schema=ON
+    command: ["--init-file=/docker-entrypoint-initdb.d/reapply-init.sql"]
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE:-yeezydb}
@@ -20,13 +15,16 @@ services:
       - db_data:/var/lib/mysql
       - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
       - ./sql/reapply-init.sql:/docker-entrypoint-initdb.d/reapply-init.sql:ro
+      - ./sql/monitoring-grants.sql:/docker-entrypoint-initdb.d/20-monitoring-grants.sql:ro
+      - ./sql/monitoring-events.sql:/docker-entrypoint-initdb.d/30-monitoring-events.sql:ro
+      - ./monitoring/mariadb/slow-query.cnf:/etc/mysql/conf.d/slow-query.cnf:ro
 
   backend:
     image: docker.io/sumin19987766/coco-backend:latest
     container_name: coco-backend
     restart: always
-#    ports:
-#        - "8080:8080"
+    #    ports:
+    #        - "8080:8080"
     expose:
       - "8080"
     environment:
@@ -40,22 +38,18 @@ services:
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SPRING_JPA_SHOW_SQL=true
       - SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL=true
-
       # Redis는 compose 네트워크 내 redis 컨테이너를 가리킵니다
       - SPRING_DATA_REDIS_HOST=${SPRING_REDIS_HOST}
       - SPRING_DATA_REDIS_PORT=${SPRING_REDIS_PORT}
-
       # JWT / Toss Secret
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - TOSS_SECRET_KEY=${TOSS_SECRET_KEY}
       - NAVER_CLIENT_SECRET=${NAVER_CLIENT_SECRET}
-
       # ACTUATOR + PROMETHEUS FIX
       - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=*
       - MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED=true
       - MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS=always
       - MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED=true
-
     depends_on:
       - db
       - redis
@@ -77,10 +71,11 @@ services:
     restart: always
     ports:
       - "9121:9121"
-    command: [ "--redis.addr=redis://${SPRING_REDIS_HOST}:${SPRING_REDIS_PORT}" ]
+    command: ["--redis.addr=redis://${SPRING_REDIS_HOST}:${SPRING_REDIS_PORT}"]
     depends_on:
       - redis
 
+  # mariadb-exporter
   mariadb-exporter:
     image: prom/mysqld-exporter:v0.18.0
     container_name: coco-mariadb-exporter
@@ -90,10 +85,64 @@ services:
     command:
       - --mysqld.address=db:3306
       - --mysqld.username=root
+      - --collect.global_status
+      - --collect.global_variables
+      - --collect.info_schema.innodb_metrics
+      - --collect.info_schema.processlist
+      - --collect.info_schema.tables
+      - --collect.perf_schema.eventsstatements
+      - --collect.perf_schema.eventswaits
+      - --collect.perf_schema.tableiowaits
+      - --web.listen-address=:9104
     environment:
       - MYSQLD_EXPORTER_PASSWORD=${DB_PASSWORD}
     depends_on:
       - db
+
+  # node-exporter
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    container_name: coco-node-exporter
+    restart: always
+    command:
+      - "--path.rootfs=/host"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc|var/lib/docker)($|/)"
+    volumes:
+      - /:/host:ro
+
+  # cadvisor
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: coco-cadvisor
+    restart: always
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  # Loki
+  loki:
+    image: grafana/loki:2.9.8
+    container_name: coco-loki
+    restart: always
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    volumes:
+      - ./monitoring/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+
+  # Promtail
+  promtail:
+    image: grafana/promtail:2.9.8
+    container_name: coco-promtail
+    restart: always
+    command: ["-config.file=/etc/promtail/config.yml"]
+    volumes:
+      - ./monitoring/promtail-config.yml:/etc/promtail/config.yml:ro
+      - db_data:/var/lib/mysql:ro
+    depends_on:
+      - loki
+      - db
+
   # prometheus
   prometheus:
     image: prom/prometheus
@@ -103,10 +152,14 @@ services:
       - "9090:9090"
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/db-alerts.yml:/etc/prometheus/db-alerts.yml:ro
     depends_on:
       - backend
       - redis-exporter
       - mariadb-exporter
+      - node-exporter
+      - cadvisor
+      - promtail
 
   # Grafana
   grafana:
@@ -117,8 +170,15 @@ services:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GRAFANA_MYSQL_USER=${GRAFANA_MYSQL_USER:-grafana_reader}
+      - GRAFANA_MYSQL_PASSWORD=${GRAFANA_MYSQL_PASSWORD:-grafana_reader_password}
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
     depends_on:
       - prometheus
+      - loki
+      - db
 
   redis:
     image: redis:7-alpine
@@ -131,3 +191,4 @@ services:
 volumes:
   db_data:
   redis_data:
+  loki_data:

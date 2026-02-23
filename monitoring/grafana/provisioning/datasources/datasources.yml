@@ -1,0 +1,32 @@
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    uid: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+
+  - name: Loki
+    type: loki
+    uid: loki
+    access: proxy
+    url: http://loki:3100
+    editable: true
+
+  - name: MariaDB SlowLog
+    type: mysql
+    uid: mariadb
+    access: proxy
+    url: db:3306
+    database: mysql
+    user: ${GRAFANA_MYSQL_USER}
+    secureJsonData:
+      password: ${GRAFANA_MYSQL_PASSWORD}
+    jsonData:
+      maxOpenConns: 10
+      maxIdleConns: 5
+      connMaxLifetime: 14400
+    editable: true

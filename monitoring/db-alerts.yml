@@ -1,0 +1,113 @@
+groups:
+  - name: mariadb-observability
+    interval: 1m
+    rules:
+      - alert: MariaDBConnectionUsageHigh
+        expr: (mysql_global_status_threads_connected / mysql_global_variables_max_connections) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: mariadb
+        annotations:
+          summary: "MariaDB connection usage above 80%"
+          description: "threads_connected is above 80% of max_connections for 5 minutes."
+
+      - alert: MariaDBDeadlockDetected
+        expr: increase(mysql_global_status_innodb_deadlocks[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          service: mariadb
+        annotations:
+          summary: "MariaDB deadlock detected"
+          description: "InnoDB deadlock count increased in the last 5 minutes."
+
+      - alert: MariaDBRowLockWaitSpike
+        expr: rate(mysql_global_status_innodb_row_lock_waits[5m]) > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: mariadb
+        annotations:
+          summary: "MariaDB row lock wait spike"
+          description: "Row lock waits are increasing faster than 1/sec for 5 minutes."
+
+      - alert: MariaDBTempTableOnDiskHigh
+        expr: (rate(mysql_global_status_created_tmp_disk_tables[5m]) / clamp_min(rate(mysql_global_status_created_tmp_tables[5m]), 1)) * 100 > 30
+        for: 5m
+        labels:
+          severity: warning
+          service: mariadb
+        annotations:
+          summary: "Temp tables on disk ratio is high"
+          description: "Created_tmp_disk_tables ratio is above 30%."
+
+      - alert: MariaDBThreadsRunningHigh
+        expr: mysql_global_status_threads_running > 30
+        for: 5m
+        labels:
+          severity: warning
+          service: mariadb
+        annotations:
+          summary: "MariaDB threads_running is high"
+          description: "threads_running is above 30 for 5 minutes."
+
+      - alert: MariaDBSlowQuerySpike
+        expr: rate(mysql_global_status_slow_queries[5m]) > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: mariadb
+        annotations:
+          summary: "MariaDB slow query rate increased"
+          description: "slow_queries rate is above 1/sec for 5 minutes."
+
+      - alert: MariaDBQueryP95High
+        expr: histogram_quantile(0.95, sum(rate(mysql_perf_schema_eventsstatements_seconds_bucket[5m])) by (le)) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          service: mariadb
+        annotations:
+          summary: "MariaDB p95 query time increased"
+          description: "p95 statement latency is above 0.5 seconds for 5 minutes."
+
+      - alert: DBContainerCPUHigh
+        expr: sum(rate(container_cpu_usage_seconds_total{name=~".*coco-db.*"}[5m])) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: mariadb
+        annotations:
+          summary: "DB container CPU usage is high"
+          description: "DB container CPU usage is above 80%."
+
+      - alert: DBContainerWriteIOHigh
+        expr: sum(rate(container_fs_writes_bytes_total{name=~".*coco-db.*"}[5m])) > 50000000
+        for: 5m
+        labels:
+          severity: warning
+          service: mariadb
+        annotations:
+          summary: "DB container disk write IO is high"
+          description: "DB container write throughput is above 50MB/s."
+
+      - alert: HikariPendingConnectionsHigh
+        expr: max_over_time(hikaricp_connections_pending[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          service: backend
+        annotations:
+          summary: "Hikari pending connections are high"
+          description: "hikaricp_connections_pending stayed above 10 for 5 minutes."
+
+      - alert: HikariConnectionTimeouts
+        expr: increase(hikaricp_connections_timeout_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          service: backend
+        annotations:
+          summary: "Hikari connection timeout detected"
+          description: "Hikari timeout counter increased in the last 5 minutes."
