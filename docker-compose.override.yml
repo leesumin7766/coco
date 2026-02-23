@@ -1,3 +1,11 @@
 services:
   frontend:
     platform: linux/amd64
+  k6:
+    image: grafana/k6:0.50.0
+    container_name: coco-k6
+    working_dir: /scripts
+    volumes:
+      - ./loadtest/k6:/scripts:ro
+    networks:
+      - default
