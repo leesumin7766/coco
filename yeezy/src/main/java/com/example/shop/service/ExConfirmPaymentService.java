@@ -18,7 +18,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class PaymentConfirmationTxService {
+public class ExConfirmPaymentService {
 
     private final OrderRepository orderRepository;
     private final OrderStatusRepository orderStatusRepository;

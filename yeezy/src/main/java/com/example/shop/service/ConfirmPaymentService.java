@@ -11,11 +11,11 @@ import org.springframework.stereotype.Service;
 public class ConfirmPaymentService {
 
     private final TossClient tossClient;
-    private final PaymentConfirmationTxService paymentConfirmationTxService;
+    private final ExConfirmPaymentService exConfirmPaymentService;
 
     public void confirmPayment(ConfirmPaymentRequestDto request) {
         // 외부 PG 호출은 트랜잭션 밖에서 수행한다.
         TossResponseDto tossRes = tossClient.confirmPayment(request);
-        paymentConfirmationTxService.applyPaymentConfirmation(request, tossRes);
+        exConfirmPaymentService.applyPaymentConfirmation(request, tossRes);
     }
 }
