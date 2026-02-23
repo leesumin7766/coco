@@ -20,7 +20,7 @@ services:
       - ./monitoring/mariadb/slow-query.cnf:/etc/mysql/conf.d/slow-query.cnf:ro
 
   backend:
-    image: docker.io/sumin19987766/coco-backend:latest
+    image: coco-backend:local
     container_name: coco-backend
     restart: always
     #    ports:
@@ -120,6 +120,18 @@ services:
       - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  # process-exporter (mariadbd process CPU/IO)
+  process-exporter:
+    image: ncabatoff/process-exporter:latest
+    container_name: coco-process-exporter
+    restart: always
+    command:
+      - "--procfs=/host/proc"
+      - "--config.path=/config/process-exporter.yml"
+    volumes:
+      - /proc:/host/proc:ro
+      - ./monitoring/process-exporter.yml:/config/process-exporter.yml:ro
 
   # Loki
   loki:

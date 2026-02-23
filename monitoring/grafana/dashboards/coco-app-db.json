@@ -342,7 +342,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(rate(container_cpu_usage_seconds_total{name=~\".*coco-db.*\"}[5m])) * 100",
+          "expr": "sum(rate(namedprocess_namegroup_cpu_seconds_total{groupname=\"mariadbd\"}[5m])) * 100",
           "legendFormat": "db_cpu",
           "refId": "A"
         }
@@ -371,7 +371,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(rate(container_fs_writes_bytes_total{name=~\".*coco-db.*\"}[5m]))",
+          "expr": "rate(namedprocess_namegroup_write_bytes_total{groupname=\"mariadbd\"}[5m])",
           "legendFormat": "db_write_bytes/s",
           "refId": "A"
         }

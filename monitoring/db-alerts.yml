@@ -73,7 +73,7 @@ groups:
           description: "p95 statement latency is above 0.5 seconds for 5 minutes."
 
       - alert: DBContainerCPUHigh
-        expr: sum(rate(container_cpu_usage_seconds_total{name=~".*coco-db.*"}[5m])) * 100 > 80
+        expr: sum(rate(namedprocess_namegroup_cpu_seconds_total{groupname="mariadbd"}[5m])) * 100 > 80
         for: 5m
         labels:
           severity: warning
@@ -83,7 +83,7 @@ groups:
           description: "DB container CPU usage is above 80%."
 
       - alert: DBContainerWriteIOHigh
-        expr: sum(rate(container_fs_writes_bytes_total{name=~".*coco-db.*"}[5m])) > 50000000
+        expr: rate(namedprocess_namegroup_write_bytes_total{groupname="mariadbd"}[5m]) > 50000000
         for: 5m
         labels:
           severity: warning
