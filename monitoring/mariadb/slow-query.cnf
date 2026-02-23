@@ -1,0 +1,9 @@
+[mysqld]
+slow_query_log = 1
+slow_query_log_file = /var/lib/mysql/slow-query.log
+long_query_time = 0.5
+log_output = FILE,TABLE
+min_examined_row_limit = 100
+log_queries_not_using_indexes = 0
+event_scheduler = ON
+performance_schema = ON

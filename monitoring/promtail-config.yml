@@ -1,0 +1,23 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: mariadb-slowlog
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: mariadb-slowlog
+          service: mariadb
+          __path__: /var/lib/mysql/slow-query.log
+    pipeline_stages:
+      - multiline:
+          firstline: '^# Time:'
+          max_wait_time: 3s

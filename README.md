@@ -17,6 +17,12 @@
 
 ---
 
+## 📈 DB 모니터링 실행 가이드
+- Compose 기반 DB 모니터링 확장 가이드는 `/Users/isumin/coco/monitoring/README.md` 참고
+- 포함 항목: MariaDB Exporter, slow query FILE+TABLE 파이프라인, Grafana 프로비저닝, SQL 리포트 자동화
+
+---
+
 ## ✅ 1. 느린 쿼리 단축 → **JPA + Query 최적화 실습**
 
 ### 📌 구현 기능
