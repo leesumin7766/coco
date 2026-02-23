@@ -63,14 +63,14 @@ groups:
           description: "slow_queries rate is above 1/sec for 5 minutes."
 
       - alert: MariaDBQueryP95High
-        expr: histogram_quantile(0.95, sum(rate(mysql_perf_schema_eventsstatements_seconds_bucket[5m])) by (le)) > 0.5
+        expr: (sum(rate(mysql_perf_schema_events_statements_latency_sum[5m])) / clamp_min(sum(rate(mysql_perf_schema_events_statements_latency_count[5m])), 1)) > 0.5
         for: 5m
         labels:
           severity: warning
           service: mariadb
         annotations:
           summary: "MariaDB p95 query time increased"
-          description: "p95 statement latency is above 0.5 seconds for 5 minutes."
+          description: "Average statement latency (p95 proxy) is above 0.5 seconds for 5 minutes."
 
       - alert: DBContainerCPUHigh
         expr: sum(rate(namedprocess_namegroup_cpu_seconds_total{groupname="mariadbd"}[5m])) * 100 > 80
@@ -83,14 +83,14 @@ groups:
           description: "DB container CPU usage is above 80%."
 
       - alert: DBContainerWriteIOHigh
-        expr: rate(namedprocess_namegroup_write_bytes_total{groupname="mariadbd"}[5m]) > 50000000
+        expr: increase(namedprocess_namegroup_read_bytes_total{groupname="mariadbd"}[30m]) + increase(namedprocess_namegroup_write_bytes_total{groupname="mariadbd"}[30m]) > 100000
         for: 5m
         labels:
           severity: warning
           service: mariadb
         annotations:
           summary: "DB container disk write IO is high"
-          description: "DB container write throughput is above 50MB/s."
+          description: "DB process 30m cumulative read+write bytes is above 100000 for 5 minutes."
 
       - alert: HikariPendingConnectionsHigh
         expr: max_over_time(hikaricp_connections_pending[5m]) > 10

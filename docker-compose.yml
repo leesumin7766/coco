@@ -193,6 +193,26 @@ services:
       - loki
       - db
 
+  # SQL report runner (periodic)
+  sql-report-runner:
+    image: mariadb:10.6
+    container_name: coco-sql-report-runner
+    restart: always
+    working_dir: /work
+    entrypoint: ["/bin/bash", "/work/monitoring/sql-report/run-report-loop.sh"]
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_PORT=3306
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DB=${MYSQL_DATABASE:-yeezydb}
+      - MYSQL_EXTRA_OPTS=--skip-ssl
+      - SQL_REPORT_INTERVAL_SECONDS=${SQL_REPORT_INTERVAL_SECONDS:-86400}
+    volumes:
+      - ./:/work
+    depends_on:
+      - db
+
   redis:
     image: redis:7-alpine
     container_name: coco-redis
