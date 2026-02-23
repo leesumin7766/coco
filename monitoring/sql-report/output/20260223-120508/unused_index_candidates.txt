@@ -1,0 +1,40 @@
++--------------+----------------+--------------------------------------+--------------------+
+| table_schema | table_name     | index_name                           | index_access_count |
++--------------+----------------+--------------------------------------+--------------------+
+| yeezydb      | audit_logs     | idx_audit_logs_actor_created_at      |                  0 |
+| yeezydb      | audit_logs     | idx_audit_logs_created_at            |                  0 |
+| yeezydb      | audit_logs     | idx_audit_logs_target_created_at     |                  0 |
+| yeezydb      | biddings       | fk_biddings_position                 |                  0 |
+| yeezydb      | biddings       | fk_biddings_status                   |                  0 |
+| yeezydb      | biddings       | idx_biddings_match                   |                  0 |
+| yeezydb      | biddings       | idx_biddings_user_status_created_at  |                  0 |
+| yeezydb      | data_catalog   | uk_data_catalog                      |                  0 |
+| yeezydb      | metrics_daily  | idx_metrics_daily_metric_date        |                  0 |
+| yeezydb      | metrics_daily  | uk_metrics_daily                     |                  0 |
+| yeezydb      | metrics_hourly | idx_metrics_hourly_metric_time       |                  0 |
+| yeezydb      | metrics_hourly | uk_metrics_hourly                    |                  0 |
+| yeezydb      | orders         | fk_orders_bidding                    |                  0 |
+| yeezydb      | orders         | fk_orders_product_size               |                  0 |
+| yeezydb      | orders         | idx_orders_seller_created_at         |                  0 |
+| yeezydb      | orders         | idx_orders_status_created_at         |                  0 |
+| yeezydb      | payment_events | idx_payment_events_order_created_at  |                  0 |
+| yeezydb      | payment_events | idx_payment_events_status_created_at |                  0 |
+| yeezydb      | payment_events | idx_payment_events_trace_created_at  |                  0 |
+| yeezydb      | payment_events | uk_payment_events_idempotency        |                  0 |
+| yeezydb      | products       | fk_products_brand                    |                  0 |
+| yeezydb      | products       | fk_products_user                     |                  0 |
+| yeezydb      | product_images | fk_product_images_product            |                  0 |
+| yeezydb      | product_sizes  | fk_product_sizes_size                |                  0 |
+| yeezydb      | product_sizes  | idx_product_sizes_product_size       |                  0 |
+| yeezydb      | request_logs   | idx_request_logs_path_created_at     |                  0 |
+| yeezydb      | request_logs   | idx_request_logs_status_created_at   |                  0 |
+| yeezydb      | request_logs   | idx_request_logs_trace_created_at    |                  0 |
+| yeezydb      | trades         | FK8orw9yr9stiy1ip3yovrw1nj2          |                  0 |
+| yeezydb      | trades         | FKtkd76bhltrlw7pinkfmfjtstj          |                  0 |
+| yeezydb      | trade_events   | idx_trade_events_order_created_at    |                  0 |
+| yeezydb      | trade_events   | idx_trade_events_status_created_at   |                  0 |
+| yeezydb      | trade_events   | idx_trade_events_trace_created_at    |                  0 |
+| yeezydb      | trade_events   | uk_trade_events_idempotency          |                  0 |
+| yeezydb      | wishlists      | fk_wishlists_product                 |                  0 |
+| yeezydb      | wishlists      | fk_wishlists_user                    |                  0 |
++--------------+----------------+--------------------------------------+--------------------+
