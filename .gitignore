@@ -4,3 +4,6 @@
 # IDE
 .idea/
 *.iml
+
+# load test artifacts
+/loadtest/results/

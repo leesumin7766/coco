@@ -46,3 +46,12 @@ Output files are generated under:
 `MariaDBQueryP95High` alert uses exporter metric
 `mysql_perf_schema_eventsstatements_seconds_bucket`.
 If this metric is unavailable in your MariaDB/exporter setup, the alert stays `NoData`.
+
+## 8) Performance quantification flow (Redis cache A/B)
+- k6 실행/집계: `/Users/isumin/coco/loadtest/k6/README.md`
+- 결과 산출물:
+  - `loadtest/results/<timestamp>/kpi-table.md`
+  - `loadtest/results/<timestamp>/storyline-script.md`
+- 지표 원본 확인:
+  - Prometheus: `http://localhost:9090/graph`
+  - Grafana: `http://localhost:3000` (`Coco / Coco App + MariaDB`)

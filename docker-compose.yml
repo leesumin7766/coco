@@ -41,6 +41,7 @@ services:
       # Redis는 compose 네트워크 내 redis 컨테이너를 가리킵니다
       - SPRING_DATA_REDIS_HOST=${SPRING_REDIS_HOST}
       - SPRING_DATA_REDIS_PORT=${SPRING_REDIS_PORT}
+      - SPRING_CACHE_TYPE=${SPRING_CACHE_TYPE:-redis}
       # JWT / Toss Secret
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - TOSS_SECRET_KEY=${TOSS_SECRET_KEY}
@@ -161,6 +162,9 @@ services:
     image: prom/prometheus
     container_name: coco-prometheus
     restart: always
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.enable-remote-write-receiver"
     ports:
       - "9090:9090"
     volumes:
