@@ -126,11 +126,11 @@ docker compose run --rm -e BASE_URL=http://backend:8080 k6 run /scripts/load.js
 - URL: `http://localhost:3000`
 - Dashboard: `Coco / Coco k6 Load Test`
 - 주요 패널:
-  - `Target vs Actual RPS`
-  - `Success Rate`
+  - `Actual RPS`
+  - `HTTP Error Rate`
   - `HTTP p95/p99`
   - `Redis Hit Ratio`
-  - `Backend/DB CPU`, `Backend/Redis Memory`
+  - `Backend/DB/Redis CPU`, `Backend/Redis Memory`
   - `JVM Runtime`, `DB/Hikari Bottleneck Signals`
 
 ## 어디서 성능 수치 확인하나?
