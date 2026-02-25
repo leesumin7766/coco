@@ -8,6 +8,17 @@
 - 모니터링 스택을 통해 애플리케이션/DB/컨테이너 상태 추적
 - GitHub Actions 기반 자동 배포 파이프라인 운영
 
+## 기술 스택
+
+| 분류 | 사용 기술 |
+|---|---|
+| Backend | Java 21, Spring Boot 3.5.3, Spring Security, OAuth2 Client, JPA, WebFlux |
+| Frontend | React 19.1.0, Axios |
+| Database | MariaDB 10.6, Redis 7 |
+| Monitoring | Spring Actuator, Prometheus, Grafana, Loki, Promtail, cAdvisor |
+| Infra | AWS EC2 (2 Instances), Docker, GitHub Actions (CI/CD), Nginx |
+| External | Toss Payments API, Daum Map API |
+
 ## 주요 기능
 
 ### 사용자 플로우
@@ -26,17 +37,6 @@
 | 주문/결제 | 주문 조회, 결제 준비, 결제 승인 | `GET /api/orders/{id}`, `POST /api/payments/prepare`, `POST /api/payments/confirm` |
 | 마이페이지 | 회원 정보/주문/입찰/위시리스트/등록 상품 조회 | `GET /api/mypage/info`, `GET /api/mypage/orders`, `GET /api/mypage/biddings/buys`, `GET /api/mypage/biddings/sales`, `GET /api/mypage/wishlist`, `GET /api/mypage/products` |
 | 위시리스트 | 추가/조회/삭제 | `POST /api/wishlist`, `GET /api/wishlist`, `DELETE /api/wishlist/{wishlistId}` |
-
-## 기술 스택
-
-| 분류 | 사용 기술 |
-|---|---|
-| Backend | Java 21, Spring Boot 3.5.3, Spring Security, OAuth2 Client, JPA, WebFlux |
-| Frontend | React 19.1.0, Axios |
-| Database | MariaDB 10.6, Redis 7 |
-| Monitoring | Spring Actuator, Prometheus, Grafana, Loki, Promtail, cAdvisor |
-| Infra | AWS EC2 (2 Instances), Docker, GitHub Actions (CI/CD), Nginx |
-| External | Toss Payments API, Daum Map API |
 
 ## 아키텍처 요약
 - Frontend: React SPA가 Nginx를 통해 서비스됩니다.
@@ -64,6 +64,9 @@ docker compose up -d
 - 상세 운영 가이드: `monitoring/README.md`
 - 성능 스토리라인 자동화: `monitoring/perf-storyline/README.md`
 - 제공 범위: DB 지표 수집, slow query 파이프라인, 알림 룰, SQL 리포트 자동화
+
+![Coco k6 Load Test Dashboard Overview](monitoring/images/coco-k6-loadtest-overview.png)
+![Coco k6 Load Test Dashboard Signals](monitoring/images/coco-k6-loadtest-signals.png)
 
 ## 배포 파이프라인
 - 워크플로우: `.github/workflows/cd.yml`
