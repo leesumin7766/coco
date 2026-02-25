@@ -14,7 +14,9 @@
 - `load.js`: sustained load to exercise DB/Hikari/threads metrics
 - `peak.js`: peak load (ramp up, hold, ramp down)
 - `product-detail-ab.js`: Redis 캐시 효과 측정을 위한 상품 상세 A/B 시나리오(hot/mixed/cold)
+- `product-detail-rps.js`: RPS 목표 기반(도착률) 시나리오
 - `run-ab-storyline.sh`: A/B 실행 + Prometheus 스냅샷 + KPI 표 + 15분 스토리라인 자동 생성
+- `run-rps-plan.sh`: warm-up + 단계별 RPS 확장 테스트(hot/mixed 기본)
 
 ## Run
 ```bash
@@ -45,6 +47,43 @@ bash loadtest/k6/run-ab-storyline.sh
 AUTO_RESTART_BACKEND=1 bash loadtest/k6/run-ab-storyline.sh
 ```
 
+### RPS 목표 기반 단계 테스트(현업형)
+권장 운영:
+- SUT(서비스): backend/db/redis/prometheus/grafana만 구동
+- Loadgen(부하): k6만 실행
+
+Before(캐시 OFF):
+```bash
+# SUT
+SPRING_CACHE_TYPE=none docker compose -f docker-compose.yml -f docker-compose.override.yml up -d --force-recreate backend
+```
+
+```bash
+# LOADGEN
+MODE=before \
+BASE_URL=http://<SUT_PRIVATE_IP>:8080 \
+K6_RW_URL=http://<SUT_PRIVATE_IP>:9090/api/v1/write \
+WARMUP_STAGE=5m:500 \
+MAIN_STAGES=3m:1000,3m:2000,3m:10000 \
+bash loadtest/k6/run-rps-plan.sh
+```
+
+After(캐시 ON):
+```bash
+# SUT
+SPRING_CACHE_TYPE=redis docker compose -f docker-compose.yml -f docker-compose.override.yml up -d --force-recreate backend
+```
+
+```bash
+# LOADGEN
+MODE=after \
+BASE_URL=http://<SUT_PRIVATE_IP>:8080 \
+K6_RW_URL=http://<SUT_PRIVATE_IP>:9090/api/v1/write \
+WARMUP_STAGE=5m:500 \
+MAIN_STAGES=3m:1000,3m:2000,3m:10000 \
+bash loadtest/k6/run-rps-plan.sh
+```
+
 ## Customize
 - Base URL (default: `http://backend:8080`)
 
@@ -66,6 +105,15 @@ docker compose run --rm -e BASE_URL=http://backend:8080 k6 run /scripts/load.js
   - `K6_RW_TREND_STATS` (default `p(50),p(95),p(99),avg,min,max`)
   - `K6_RW_PUSH_INTERVAL` (default `3s`)
 
+- RPS 테스트 파라미터(`run-rps-plan.sh`)
+  - `MODE` (default `before`)
+  - `SCENARIOS` (default `hot,mixed`)
+  - `WARMUP_ENABLED` (default `1`)
+  - `WARMUP_STAGE` (default `5m:500`)
+  - `MAIN_STAGES` (default `3m:1000,3m:2000,3m:5000`)
+  - `PRE_ALLOCATED_VUS` (default `300`)
+  - `MAX_VUS` (default `3000`)
+
 ## Grafana panels to watch
 - `Threads Running`
 - `Connection Usage`
@@ -78,11 +126,12 @@ docker compose run --rm -e BASE_URL=http://backend:8080 k6 run /scripts/load.js
 - URL: `http://localhost:3000`
 - Dashboard: `Coco / Coco k6 Load Test`
 - 주요 패널:
-  - `Total RPS`
-  - `HTTP p95`
-  - `HTTP Duration p95/p99`
-  - `HTTP Error Rate by Scenario`
-  - `VUs by Scenario`
+  - `Target vs Actual RPS`
+  - `Success Rate`
+  - `HTTP p95/p99`
+  - `Redis Hit Ratio`
+  - `Backend/DB CPU`, `Backend/Redis Memory`
+  - `JVM Runtime`, `DB/Hikari Bottleneck Signals`
 
 ## 어디서 성능 수치 확인하나?
 아래 4곳을 보면 전/후 수치가 모두 맞춰집니다.

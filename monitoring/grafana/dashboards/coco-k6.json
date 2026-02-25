@@ -9,132 +9,206 @@
   "panels": [
     {
       "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}, "unit": "reqps"}, "overrides": []},
-      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0},
+      "fieldConfig": {"defaults": {"unit": "reqps", "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}}},
+      "gridPos": {"h": 5, "w": 4, "x": 0, "y": 0},
       "id": 1,
-      "options": {"colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
-      "targets": [{"expr": "sum(rate(k6_http_reqs_total{mode=~\"$mode\",scenario=~\"$scenario\"}[1m]))", "legendFormat": "RPS", "refId": "A"}],
-      "title": "Total RPS",
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "colorMode": "value", "graphMode": "none", "justifyMode": "auto"},
+      "targets": [{"expr": "sum(rate(k6_http_reqs_total{mode=~\"$mode\",scenario=~\"$scenario\",phase=~\"$phase\"}[1m]))", "refId": "A", "legendFormat": "RPS"}],
+      "title": "Actual RPS",
       "type": "stat"
     },
     {
       "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "mappings": [], "unit": "percent"}, "overrides": []},
-      "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0},
+      "fieldConfig": {"defaults": {"unit": "reqps", "color": {"mode": "palette-classic"}}},
+      "gridPos": {"h": 5, "w": 4, "x": 4, "y": 0},
       "id": 2,
-      "options": {"colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
-      "targets": [{"expr": "100 * avg(k6_http_req_failed_rate{mode=~\"$mode\",scenario=~\"$scenario\"})", "legendFormat": "Error %", "refId": "A"}],
-      "title": "HTTP Error Rate",
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "colorMode": "value", "graphMode": "none", "justifyMode": "auto"},
+      "targets": [{"expr": "$target_rps", "refId": "A", "legendFormat": "Target"}],
+      "title": "Target RPS",
       "type": "stat"
     },
     {
       "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}, "unit": "none"}, "overrides": []},
-      "gridPos": {"h": 6, "w": 6, "x": 12, "y": 0},
+      "fieldConfig": {"defaults": {"unit": "percent", "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "yellow", "value": 95}, {"color": "green", "value": 99}]}}},
+      "gridPos": {"h": 5, "w": 4, "x": 8, "y": 0},
       "id": 3,
-      "options": {"colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
-      "targets": [{"expr": "sum(k6_vus{mode=~\"$mode\",scenario=~\"$scenario\"})", "legendFormat": "VUs", "refId": "A"}],
-      "title": "Active VUs",
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "colorMode": "value", "graphMode": "none", "justifyMode": "auto"},
+      "targets": [{"expr": "100 * (1 - avg(k6_http_req_failed_rate{mode=~\"$mode\",scenario=~\"$scenario\",phase=~\"$phase\"}))", "refId": "A", "legendFormat": "Success %"}],
+      "title": "Success Rate",
       "type": "stat"
     },
     {
       "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}, "unit": "ms"}, "overrides": []},
-      "gridPos": {"h": 6, "w": 6, "x": 18, "y": 0},
+      "fieldConfig": {"defaults": {"unit": "ms", "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 300}, {"color": "red", "value": 800}]}}},
+      "gridPos": {"h": 5, "w": 4, "x": 12, "y": 0},
       "id": 4,
-      "options": {"colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
-      "targets": [{"expr": "avg(k6_http_req_duration_p95{mode=~\"$mode\",scenario=~\"$scenario\"})", "legendFormat": "p95", "refId": "A"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "colorMode": "value", "graphMode": "none", "justifyMode": "auto"},
+      "targets": [{"expr": "avg(k6_http_req_duration_p95{mode=~\"$mode\",scenario=~\"$scenario\",phase=~\"$phase\"})", "refId": "A", "legendFormat": "p95"}],
       "title": "HTTP p95",
       "type": "stat"
     },
     {
       "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "mappings": [], "unit": "ms"}, "overrides": []},
-      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 6},
+      "fieldConfig": {"defaults": {"unit": "percent", "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "yellow", "value": 80}, {"color": "green", "value": 95}]}}},
+      "gridPos": {"h": 5, "w": 4, "x": 16, "y": 0},
       "id": 5,
-      "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single", "sort": "none"}},
-      "targets": [{"expr": "k6_http_req_duration_p95{mode=~\"$mode\",scenario=~\"$scenario\"}", "legendFormat": "{{mode}}/{{scenario}} p95", "refId": "A"}, {"expr": "k6_http_req_duration_p99{mode=~\"$mode\",scenario=~\"$scenario\"}", "legendFormat": "{{mode}}/{{scenario}} p99", "refId": "B"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "colorMode": "value", "graphMode": "none", "justifyMode": "auto"},
+      "targets": [{"expr": "100 * (rate(redis_keyspace_hits_total[5m]) / clamp_min(rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m]), 1))", "refId": "A", "legendFormat": "Redis hit %"}],
+      "title": "Redis Hit Ratio",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "none", "color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}}},
+      "gridPos": {"h": 5, "w": 4, "x": 20, "y": 0},
+      "id": 6,
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "colorMode": "value", "graphMode": "none", "justifyMode": "auto"},
+      "targets": [{"expr": "redis_connected_clients", "refId": "A", "legendFormat": "Clients"}],
+      "title": "Redis Connected Clients",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 5},
+      "id": 7,
+      "options": {"legend": {"showLegend": true, "placement": "bottom", "displayMode": "list"}, "tooltip": {"mode": "single", "sort": "none"}},
+      "targets": [
+        {"expr": "sum(rate(k6_http_reqs_total{mode=~\"$mode\",scenario=~\"$scenario\",phase=~\"$phase\"}[1m]))", "refId": "A", "legendFormat": "Actual RPS"},
+        {"expr": "$target_rps", "refId": "B", "legendFormat": "Target RPS"}
+      ],
+      "title": "Target vs Actual RPS",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 5},
+      "id": 8,
+      "options": {"legend": {"showLegend": true, "placement": "bottom", "displayMode": "list"}, "tooltip": {"mode": "single", "sort": "none"}},
+      "targets": [
+        {"expr": "k6_http_req_duration_p95{mode=~\"$mode\",scenario=~\"$scenario\",phase=~\"$phase\"}", "refId": "A", "legendFormat": "{{mode}}/{{scenario}}/{{phase}} p95"},
+        {"expr": "k6_http_req_duration_p99{mode=~\"$mode\",scenario=~\"$scenario\",phase=~\"$phase\"}", "refId": "B", "legendFormat": "{{mode}}/{{scenario}}/{{phase}} p99"}
+      ],
       "title": "HTTP Duration p95/p99",
       "type": "timeseries"
     },
     {
       "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "mappings": [], "unit": "reqps"}, "overrides": []},
-      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 6},
-      "id": 6,
-      "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single", "sort": "none"}},
-      "targets": [{"expr": "sum by (mode,scenario) (rate(k6_http_reqs_total{mode=~\"$mode\",scenario=~\"$scenario\"}[1m]))", "legendFormat": "{{mode}}/{{scenario}}", "refId": "A"}],
-      "title": "HTTP RPS by Scenario",
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 13},
+      "id": 9,
+      "options": {"legend": {"showLegend": true, "placement": "bottom", "displayMode": "list"}, "tooltip": {"mode": "single", "sort": "none"}},
+      "targets": [
+        {"expr": "100 * avg(rate(container_cpu_usage_seconds_total{name=~\".*coco-backend.*\"}[1m]))", "refId": "A", "legendFormat": "Backend CPU%"},
+        {"expr": "100 * avg(rate(container_cpu_usage_seconds_total{name=~\".*coco-db.*\"}[1m]))", "refId": "B", "legendFormat": "DB CPU%"}
+      ],
+      "title": "Backend/DB CPU",
       "type": "timeseries"
     },
     {
       "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "mappings": [], "unit": "percent"}, "overrides": []},
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 15},
-      "id": 7,
-      "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single", "sort": "none"}},
-      "targets": [{"expr": "100 * k6_http_req_failed_rate{mode=~\"$mode\",scenario=~\"$scenario\"}", "legendFormat": "{{mode}}/{{scenario}}", "refId": "A"}],
-      "title": "HTTP Error Rate by Scenario",
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 13},
+      "id": 10,
+      "options": {"legend": {"showLegend": true, "placement": "bottom", "displayMode": "list"}, "tooltip": {"mode": "single", "sort": "none"}},
+      "targets": [
+        {"expr": "avg(container_memory_usage_bytes{name=~\".*coco-backend.*\"}) / 1024 / 1024", "refId": "A", "legendFormat": "Backend MB"},
+        {"expr": "avg(container_memory_usage_bytes{name=~\".*coco-redis.*\"}) / 1024 / 1024", "refId": "B", "legendFormat": "Redis MB"}
+      ],
+      "title": "Backend/Redis Memory",
       "type": "timeseries"
     },
     {
       "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "mappings": [], "unit": "none"}, "overrides": []},
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 15},
-      "id": 8,
-      "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single", "sort": "none"}},
-      "targets": [{"expr": "sum by (mode,scenario) (k6_vus{mode=~\"$mode\",scenario=~\"$scenario\"})", "legendFormat": "{{mode}}/{{scenario}}", "refId": "A"}],
-      "title": "VUs by Scenario",
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 13},
+      "id": 11,
+      "options": {"legend": {"showLegend": true, "placement": "bottom", "displayMode": "list"}, "tooltip": {"mode": "single", "sort": "none"}},
+      "targets": [
+        {"expr": "100 * sum(jvm_memory_used_bytes{area=\"heap\"}) / clamp_min(sum(jvm_memory_max_bytes{area=\"heap\"}), 1)", "refId": "A", "legendFormat": "JVM Heap Used%"},
+        {"expr": "rate(jvm_gc_pause_seconds_count[1m])", "refId": "B", "legendFormat": "GC pause count/s"},
+        {"expr": "process_cpu_usage * 100", "refId": "C", "legendFormat": "Process CPU%"}
+      ],
+      "title": "JVM Runtime",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 21},
+      "id": 12,
+      "options": {"legend": {"showLegend": true, "placement": "bottom", "displayMode": "list"}, "tooltip": {"mode": "single", "sort": "none"}},
+      "targets": [
+        {"expr": "100 * (rate(redis_keyspace_hits_total[5m]) / clamp_min(rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m]), 1))", "refId": "A", "legendFormat": "Hit Ratio%"},
+        {"expr": "rate(redis_evicted_keys_total[5m])", "refId": "B", "legendFormat": "Evicted keys/s"}
+      ],
+      "title": "Redis Cache Effectiveness",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 21},
+      "id": 13,
+      "options": {"legend": {"showLegend": true, "placement": "bottom", "displayMode": "list"}, "tooltip": {"mode": "single", "sort": "none"}},
+      "targets": [
+        {"expr": "max_over_time(hikaricp_connections_pending[5m])", "refId": "A", "legendFormat": "Hikari pending max"},
+        {"expr": "rate(mysql_global_status_slow_queries[5m])", "refId": "B", "legendFormat": "SlowQuery/s"},
+        {"expr": "(mysql_global_status_threads_connected / mysql_global_variables_max_connections) * 100", "refId": "C", "legendFormat": "DB connection usage%"}
+      ],
+      "title": "DB/Hikari Bottleneck Signals",
       "type": "timeseries"
     }
   ],
   "refresh": "5s",
   "schemaVersion": 39,
   "style": "dark",
-  "tags": ["k6", "loadtest", "redis", "ab"],
+  "tags": ["k6", "rps", "redis", "jvm", "db"],
   "templating": {
     "list": [
       {
-        "current": {"selected": true, "text": "All", "value": ".*"},
-        "datasource": {"type": "prometheus", "uid": "prometheus"},
-        "definition": "label_values(k6_http_reqs_total,mode)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "mode",
-        "multi": true,
         "name": "mode",
-        "options": [],
-        "query": {"query": "label_values(k6_http_reqs_total,mode)", "refId": "Prometheus-mode-Variable-Query"},
-        "refresh": 1,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
-        "type": "query"
+        "label": "mode",
+        "type": "query",
+        "datasource": {"type": "prometheus", "uid": "prometheus"},
+        "query": {"query": "label_values(k6_http_reqs_total,mode)", "refId": "mode-var"},
+        "definition": "label_values(k6_http_reqs_total,mode)",
+        "includeAll": true,
+        "multi": true,
+        "current": {"text": "All", "value": ".*", "selected": true},
+        "refresh": 1
       },
       {
-        "current": {"selected": true, "text": "All", "value": ".*"},
-        "datasource": {"type": "prometheus", "uid": "prometheus"},
-        "definition": "label_values(k6_http_reqs_total,scenario)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "scenario",
-        "multi": true,
         "name": "scenario",
-        "options": [],
-        "query": {"query": "label_values(k6_http_reqs_total,scenario)", "refId": "Prometheus-scenario-Variable-Query"},
-        "refresh": 1,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
-        "type": "query"
+        "label": "scenario",
+        "type": "query",
+        "datasource": {"type": "prometheus", "uid": "prometheus"},
+        "query": {"query": "label_values(k6_http_reqs_total,scenario)", "refId": "scenario-var"},
+        "definition": "label_values(k6_http_reqs_total,scenario)",
+        "includeAll": true,
+        "multi": true,
+        "current": {"text": "All", "value": ".*", "selected": true},
+        "refresh": 1
+      },
+      {
+        "name": "phase",
+        "label": "phase",
+        "type": "query",
+        "datasource": {"type": "prometheus", "uid": "prometheus"},
+        "query": {"query": "label_values(k6_http_reqs_total,phase)", "refId": "phase-var"},
+        "definition": "label_values(k6_http_reqs_total,phase)",
+        "includeAll": true,
+        "multi": true,
+        "current": {"text": "All", "value": ".*", "selected": true},
+        "refresh": 1
+      },
+      {
+        "name": "target_rps",
+        "label": "target_rps",
+        "type": "textbox",
+        "current": {"text": "2000", "value": "2000"}
       }
     ]
   },
-  "time": {"from": "now-15m", "to": "now"},
+  "time": {"from": "now-30m", "to": "now"},
   "timepicker": {},
   "timezone": "",
   "title": "Coco k6 Load Test",
   "uid": "coco-k6-loadtest",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }
