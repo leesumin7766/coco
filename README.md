@@ -5,7 +5,7 @@
 ## 프로젝트 개요
 - 백엔드(Spring Boot)와 프론트엔드(React)를 분리한 웹 서비스 구조
 - MariaDB/Redis 기반 데이터 처리와 캐시 적용
-- 모니터링 스택을 통해 애플리케이션/DB/컨테이너 상태 추적
+- AWS EC2 2대(Loadgen, SUT) 분리 환경에서 모니터링 스택을 구성해 애플리케이션/DB/컨테이너 상태와 부하-병목 상관관계를 추적
 - GitHub Actions 기반 자동 배포 파이프라인 운영
 
 ## 기술 스택
@@ -64,6 +64,8 @@ docker compose up -d
 - 상세 운영 가이드: `monitoring/README.md`
 - 성능 스토리라인 자동화: `monitoring/perf-storyline/README.md`
 - 제공 범위: DB 지표 수집, slow query 파이프라인, 알림 룰, SQL 리포트 자동화
+- 검증 환경: AWS EC2 2대 구성 (Loadgen: k6 부하 생성, SUT: API/DB/Redis/Monitoring 스택 운영)
+- Loadgen에서 시나리오 트래픽을 발생시키고, SUT에서 p95/p99, SlowQuery, Hikari pending, CPU/Memory 지표를 동시 관측합니다.
 
 ![Coco k6 Load Test Dashboard Overview](monitoring/images/coco-k6-loadtest-overview.png)
 ![Coco k6 Load Test Dashboard Signals](monitoring/images/coco-k6-loadtest-signals.png)
