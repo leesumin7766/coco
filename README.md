@@ -1,4 +1,4 @@
-# coco
+# COCO : 리셀 스니커즈 중개 거래 플랫폼
 07-14 user/coco 내의 폴더 사용할 것. 이 repo 사용할 것
 
 > Spring Boot 3.5.3 / Java 21 / MariaDB / Redis / React 19
@@ -7,20 +7,19 @@
 
 | 분류         | 사용 기술|
 |--------------|-----------|
-| Backend      | Spring Boot 3.5.3, JPA, Spring Security, OAuth2 |
-| DB / 캐시     | MariaDB, Redis |
-| Concurrency  | `@Transactional`, Pessimistic/Optimistic Lock |
-| Async / TPS  | `@Async`, CompletableFuture, Actuator, Grafana |
-| Frontend     | React 19.1.0 |
-| Monitoring   | Spring Actuator, Prometheus, Grafana |
-| Tools        | DBeaver 25.1.2, Postman |
+| Backend      | Java 21, Spring Boot 3.5.3, Spring Web, Spring Security, OAuth2 Client, Spring Data JPA, Spring Data Redis, WebFlux |
+| Frontend     | React 19.1.0, React Router DOM, Axios, Create React App |
+| Database     | MariaDB 10.6, Redis 7 |
+| Monitoring   | Spring Actuator, Micrometer Prometheus Registry, Prometheus, Grafana, Loki, Promtail, mysqld-exporter, redis-exporter, node-exporter, cAdvisor |
+| Infra        | AWS EC2 (2 Instances), Docker, Docker Compose, GitHub Actions (CI/CD), Docker Hub, Nginx |
+| External     | Toss Payments API, Daum Postcode API |
 
 ---
 
 ## 📈 DB 모니터링 실행 가이드
 - Compose 기반 DB 모니터링 확장 가이드는 `/Users/isumin/coco/monitoring/README.md` 참고
 - 포함 항목: MariaDB Exporter, slow query FILE+TABLE 파이프라인, Grafana 프로비저닝, SQL 리포트 자동화
-- Redis 캐시 성능 A/B(k6) + KPI 표 + 발표 스크립트 자동화는 `/Users/isumin/coco/loadtest/k6/README.md` 참고
+- 성능개선 스토리라인 자동화(k6 A/B + KPI 표 + 발표 스크립트)는 `/Applications/isumin/coco/monitoring/perf-storyline/README.md` 참고
 
 ---
 
